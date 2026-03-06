@@ -10,7 +10,8 @@ a webapp for managing student groups/clubs and subscriptions
 ```
 
 ### starting the program's environment
-```bash 
+```bash
+    python3 -m venv env
     # Activate the environment
     source venv/bin/activate      # Linux/macOS
     # OR

@@ -1,0 +1,48 @@
+# Python cache
+
+**pycache**/
+*.py[cod]
+
+# Virtual environments
+
+venv/
+env/
+.venv/
+clubhub_env/
+
+# Environment variables / secrets
+
+.env
+.env.*
+
+# Build files
+
+build/
+dist/
+*.egg-info/
+
+# Logs
+
+*.log
+
+# Testing
+
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Type check caches
+
+.mypy_cache/
+.pyre/
+
+# IDE files
+
+.vscode/
+.idea/
+
+# OS files
+
+.DS_Store
+Thumbs.db
+

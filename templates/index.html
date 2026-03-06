@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+    {{ super() }}
+    <h1>Welcome To ClubHub</h1>
+    
+    <div>
+        <button onclick="redirect('/signup')">SignUp</button>
+        <button onclick="redirect('/login')">Login</button>
+    </div>
+{% endblock %}
+
+{%block script%}
+    <script>
+        function redirect(link){
+            if(typeof link !== "string")
+                throw new TypeError("link is not a string");
+            else 
+                window.location.assign(link);
+        }
+    </script>
+{%endblock%}

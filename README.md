@@ -13,11 +13,11 @@ a webapp for managing student groups/clubs and subscriptions
 ```bash
     python3 -m venv env
     # Activate the environment
-    source venv/bin/activate      # Linux/macOS
+    source env/bin/activate      # Linux/macOS
     # OR
-    venv\Scripts\activate         # Windows (CMD)
+    env\Scripts\activate         # Windows (CMD)
     # OR
-    .\venv\Scripts\Activate.ps1   # Windows (PowerShell)
+    .\env\Scripts\Activate.ps1   # Windows (PowerShell)
 
     # Install project dependencies
     pip install -r requirements.txt

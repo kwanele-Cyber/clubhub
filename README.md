@@ -5,7 +5,7 @@ a webapp for managing student groups/clubs and subscriptions
 
 ```bash
     # Clone the repository
-    git clone https://github.com/kwanele-Cyber/clubhub.git
+    git clone git@github.com:kwanele-Cyber/clubhub.git
     cd clubhub
 ```
 

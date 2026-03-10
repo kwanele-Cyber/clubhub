@@ -1,33 +1,32 @@
-{% extends "base.html"%}
+<!-- templates/register.html -->
+{% extends "base.html" %}
+
+{%block title %}SignUp{%endblock%}
 
 {% block content %}
-    <div>
-        <form method="post">
-            <!--Name-->
-            <input type="text" name="name"/><br>
-            <span id="name-verification"><br>
-
-            <!--Surname-->
-            <input type="text" name="surname"/><br>
-            <span id="surname-verification"><br>
-
-            <!--Email-->
-            <input type="email" name="email"/><br>
-            <span id="email-verification"><br>
-
-            <!--Password-->
-            <input type="password" name="password"/><br>
-            <span id="password-verification"><br>
-
-            <!--Password Confirmation -->
-            <input type="password" name="confirm-password"/><br>
-            <span id="confirm-password-verification"><br>
-            
-            <input type="submit" value="submit"/>
-        </form>
-    </div>
-{% endblock %}
-
-{% block script %}
+    <h1>SignUp</h1>
     
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        
+        <div>
+            {{ form.username.label }}<br>
+            {{ form.username(size=32) }}<br>
+            {% for error in form.username.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
+        </div>
+        
+        <div>
+            {{ form.email.label }}<br>
+            {{ form.email(size=32) }}<br>
+            {% for error in form.email.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
+        </div>
+        
+        <div>
+            {{ form.submit() }}
+        </div>
+    </form>
 {% endblock %}

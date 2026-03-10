@@ -6,6 +6,10 @@ from flask_migrate import Migrate
 import os
 from dotenv import load_dotenv
 
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField
+from wtforms.validators import DataRequired, Email
+
 #endregion
 
 
@@ -22,6 +26,7 @@ app = Flask(__name__)
 #---------------
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = 'developmennt-secret-key'
 
 #endregion
 
@@ -36,7 +41,7 @@ migrate = Migrate(app, db)
 
 #endregion
 
-#region models
+#region db_models
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -46,6 +51,14 @@ class User(db.Model):
     
     def __repr__(self):
         return f'<User {self.username}>'
+
+#endregion
+
+#region form_models
+class RegistrationForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    submit = SubmitField('Register')
 
 
 #endregion
@@ -66,8 +79,30 @@ def list_users():
     users = User.query.all()
     return render_template('users/index.html', users=users)
 
+@app.route('/auth/signup', methods=['GET', 'POST'])
+def register():
+    form = RegistrationForm()
+    
+    if form.validate_on_submit():
+        # Check if user exists
+        existing_user = User.query.filter_by(username=form.username.data).first()
+        if existing_user:
+            return "Username already taken!"
+        
+        # Create new user
+        user = User(
+            username=form.username.data,
+            email=form.email.data
+        )
+        db.session.add(user)
+        db.session.commit()
+        
+        return f"User {user.username} created! <a href='/users'>View Users</a>"
+    
+    return render_template('auth/signup.html', form=form)
 
 #endregion
+
 
 
 #endregion

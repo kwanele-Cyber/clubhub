@@ -1,0 +1,16 @@
+<!-- templates/users/index.html -->
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Users</h1>
+    
+    {% if users %}
+        <ul>
+        {% for user in users %}
+            <li>{{ user.username }} - {{ user.email }}</li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No users yet!</p>
+    {% endif %}
+{% endblock %}

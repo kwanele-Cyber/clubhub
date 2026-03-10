@@ -4,24 +4,14 @@ app = Flask('__name__')
 
 #GET /
 @app.route('/')
-def index():
+def home():
     return render_template('index.html')
 
-#GET /login
-@app.route('/login', methods=["GET","POST"])
-def login():
-    if request.method == "POST":
-        return "OK"
-    else:
-        return render_template('login.html')
+@app.route('/about')
+def about():
+    return render_template('about.html')
 
-#GET /signup
-@app.route('/signup', methods=["GET","POST"])
-def signup():
-    if request.method == "POST":
-        return "OK"
-    else:
-        return render_template('signup.html')
+
 
 if __name__ == '__main__':
     app.run(debug=True)

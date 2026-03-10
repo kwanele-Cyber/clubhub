@@ -1,31 +1,64 @@
 /* static/css/style.css */
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    line-height: 1.6;
+
+/* Card hover effects */
+.card {
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
-nav {
-    background-color: #333;
-    padding: 1rem;
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-nav a {
+/* Dashboard cards */
+.dashboard-card {
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    text-decoration: none;
-    margin-right: 1rem;
 }
 
-nav a:hover {
-    color: #ddd;
+/* Form styling */
+.form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
 }
 
-footer {
-    background-color: #f4f4f4;
-    text-align: center;
-    padding: 1rem;
-    position: fixed;
-    bottom: 0;
-    width: 100%;
+/* Button hover effects */
+.btn {
+    transition: all 0.3s;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(50,50,93,.11), 0 1px 3px rgba(0,0,0,.08);
+}
+
+/* Flash message animations */
+.alert {
+    animation: slideDown 0.5s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Navigation active state */
+.navbar-nav .nav-link.active {
+    font-weight: bold;
+    border-bottom: 2px solid white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .navbar-nav .nav-link.active {
+        border-bottom: none;
+    }
 }

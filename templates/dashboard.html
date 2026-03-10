@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-user me-2"></i>Welcome, {{ current_user.full_name }}!</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Username:</strong> {{ current_user.username }}</p>
+                <p><strong>Email:</strong> {{ current_user.email }}</p>
+                <p><strong>Member since:</strong> {{ current_user.created_at.strftime('%B %d, %Y') }}</p>
+                <p><strong>Last login:</strong> {{ current_user.last_login.strftime('%B %d, %Y at %H:%M') if current_user.last_login else 'First login' }}</p>
+                <a href="{{ url_for('profile') }}" class="btn btn-outline-primary">View Profile</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-tachometer-alt me-2"></i>Your Dashboard</h5>
+            </div>
+            <div class="card-body">
+                <h6>Quick Actions</h6>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <i class="fas fa-calendar-plus fa-2x text-primary mb-2"></i>
+                                <h6>Create Event</h6>
+                                <p class="small">Organize a new club event</p>
+                                <button class="btn btn-sm btn-primary" disabled>Coming Soon</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <i class="fas fa-users fa-2x text-success mb-2"></i>
+                                <h6>Join Club</h6>
+                                <p class="small">Find and join clubs</p>
+                                <button class="btn btn-sm btn-success" disabled>Coming Soon</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    More features coming in future lessons!
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

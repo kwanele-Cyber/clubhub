@@ -1,16 +1,35 @@
 <!-- templates/users/index.html -->
 {% extends "base.html" %}
 
+{% block title %}Users{% endblock %}
+
 {% block content %}
-    <h1>Users</h1>
-    
-    {% if users %}
-        <ul>
-        {% for user in users %}
-            <li>{{ user.username }} - {{ user.email }}</li>
-        {% endfor %}
-        </ul>
+<h1 class="mb-4"><i class="fas fa-users me-2"></i>Registered Users</h1>
+
+<div class="row">
+    {% for user in users %}
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-user-circle text-primary me-2"></i>
+                        {{ user.username }}
+                    </h5>
+                    <p class="card-text">
+                        <small class="text-muted">
+                            <i class="fas fa-envelope me-2"></i>{{ user.email }}<br>
+                            <i class="fas fa-calendar me-2"></i>Joined: {{ user.created_at.strftime('%Y-%m-%d') }}
+                        </small>
+                    </p>
+                </div>
+            </div>
+        </div>
     {% else %}
-        <p>No users yet!</p>
-    {% endif %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>No users registered yet.
+            </div>
+        </div>
+    {% endfor %}
+</div>
 {% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}My Invites{% endblock %}
+
+{% block content %}
+<h1 class="mb-4"><i class="fas fa-envelope-open-text me-2"></i>My Event Invites</h1>
+
+<div class="list-group">
+    {% for invite in invites %}
+        <div class="list-group-item">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="fw-bold">{{ invite.event.title }}</div>
+                    <div class="text-muted small">Club: {{ invite.event.club.name }}</div>
+                    <div class="text-muted small">Sent {{ invite.sent_at.strftime('%b %d, %Y %H:%M') }} by {{ invite.inviter.full_name }}</div>
+                    {% if invite.message %}
+                        <div class="mt-2">"{{ invite.message }}"</div>
+                    {% endif %}
+                </div>
+                <div>
+                    {% if invite.status == 'pending' %}
+                        <span class="badge bg-warning text-dark">Pending</span>
+                    {% elif invite.status == 'accepted' %}
+                        <span class="badge bg-success">Accepted</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Declined</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% if invite.status == 'pending' %}
+                <div class="mt-3 d-flex gap-2">
+                    <form method="POST" action="{{ url_for('accept_invite', invite_id=invite.id) }}">
+                        <button type="submit" class="btn btn-sm btn-success">Accept</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('decline_invite', invite_id=invite.id) }}">
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">Decline</button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>No invites yet.
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,14 +1,71 @@
 {% extends "base.html" %}
 
-
-{% block title %}Home{% endblock %}
-
+{% block title %}ClubHub{% endblock %}
 
 {% block content %}
-    <h1>Welcome to Student Club Management</h1>
-    <p>This is where we'll build our app!</p>
+<section class="hero-campus">
+    <div class="hero-copy">
+        <span class="hero-badge">Retro Campus Edition</span>
+        <h1>Find Your Club. Build Your Campus.</h1>
+        <p>ClubHub helps students discover, join, and grow communities across campus. Create events, manage invites, and keep everyone in the loop.</p>
+        <div class="hero-actions">
+            <a class="btn btn-primary" href="{{ url_for('signup') }}">Get Started</a>
+            <a class="btn btn-outline-secondary" href="{{ url_for('login') }}">Log In</a>
+        </div>
+        <div class="hero-stats">
+            <div>
+                <h3>120+</h3>
+                <span>Active Clubs</span>
+            </div>
+            <div>
+                <h3>4.8K</h3>
+                <span>Students Connected</span>
+            </div>
+            <div>
+                <h3>300+</h3>
+                <span>Events Hosted</span>
+            </div>
+        </div>
+    </div>
+    <div class="hero-card">
+        <div class="hero-card-inner">
+            <h4>What you can do</h4>
+            <ul>
+                <li>Request to join clubs with proof upload</li>
+                <li>Leaders create events and send invites</li>
+                <li>Admins oversee the whole campus</li>
+            </ul>
+            <div class="hero-card-footer">
+                <i class="fas fa-bullhorn"></i>
+                Announcements keep everyone informed
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="campus-grid">
+    <div class="campus-feature">
+        <div class="feature-icon"><i class="fas fa-users"></i></div>
+        <h5>Smart Club Discovery</h5>
+        <p>Search clubs by interest, explore descriptions, and request to join in seconds.</p>
+    </div>
+    <div class="campus-feature">
+        <div class="feature-icon"><i class="fas fa-calendar-check"></i></div>
+        <h5>Events That Feel Official</h5>
+        <p>Create events, send invites, and manage attendance with clear role permissions.</p>
+    </div>
+    <div class="campus-feature">
+        <div class="feature-icon"><i class="fas fa-envelope-open-text"></i></div>
+        <h5>Announcements for All</h5>
+        <p>Admins and leaders broadcast updates without spamming everyone else.</p>
+    </div>
+</section>
+
+<section class="campus-banner">
+    <div>
+        <h2>Ready to join the campus network?</h2>
+        <p>Create your profile and start building your student community today.</p>
+    </div>
+    <a class="btn btn-success" href="{{ url_for('signup') }}">Create Account</a>
+</section>
 {% endblock %}
-
-{%block script%}
-
-{%endblock%}

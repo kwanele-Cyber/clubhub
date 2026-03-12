@@ -38,6 +38,15 @@
                             <div class="invalid-feedback">{{ error }}</div>
                         {% endfor %}
                     </div>
+                    <div class="mb-3">
+                        {{ form.role.label(class="form-label") }}
+                        {{ form.role(class="form-select" + (" is-invalid" if form.role.errors else "")) }}
+                        {% for error in form.role.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                        <small class="text-muted">Choose your role in the club system</small>
+                    </div>
+
                     
                     <div class="mb-3">
                         {{ form.password.label(class="form-label") }}

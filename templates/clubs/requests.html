@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Join Requests{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-1"><i class="fas fa-inbox me-2"></i>Join Requests</h1>
+        <p class="text-muted mb-0">Club: <strong>{{ club.name }}</strong></p>
+    </div>
+    <a href="{{ url_for('clubs') }}" class="btn btn-outline-secondary">Back to Clubs</a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if requests %}
+            <div class="list-group">
+                {% for request in requests %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fw-bold">{{ request.user.full_name }} (@{{ request.user.username }})</div>
+                            <div class="small text-muted">Requested {{ request.joined_at.strftime('%b %d, %Y %H:%M') }}</div>
+                            {% if request.proof_document %}
+                            <div class="small">
+                                <a href="{{ url_for('download_request_proof', membership_id=request.id) }}" class="link-secondary">Download proof</a>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex gap-2">
+                            <form method="POST" action="{{ url_for('approve_request', club_id=club.id, membership_id=request.id) }}">
+                                <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                            </form>
+                            <form method="POST" action="{{ url_for('decline_request', club_id=club.id, membership_id=request.id) }}">
+                                <button type="submit" class="btn btn-sm btn-outline-secondary">Decline</button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info mb-0">
+                <i class="fas fa-info-circle me-2"></i>No pending requests.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

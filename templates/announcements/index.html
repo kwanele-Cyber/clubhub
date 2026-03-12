@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Announcements{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0"><i class="fas fa-bullhorn me-2"></i>Announcements</h1>
+    {% if current_user.role in ['admin', 'leader'] %}
+        <a href="{{ url_for('new_announcement') }}" class="btn btn-primary">Post Announcement</a>
+    {% endif %}
+</div>
+
+<div class="list-group">
+    {% for item in announcements %}
+        <div class="list-group-item">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h5 class="mb-1">{{ item.title }}</h5>
+                    <div class="text-muted small mb-2">
+                        Posted by {{ item.author.full_name }} ({{ item.created_by_role|capitalize }}) ? {{ item.created_at.strftime('%b %d, %Y %H:%M') }}
+                    </div>
+                    <p class="mb-0">{{ item.body }}</p>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>No announcements yet.
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

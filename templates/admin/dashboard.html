@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Admin Dashboard</h1>
+    <a href="{{ url_for('admin_users') }}" class="btn btn-outline-secondary">Manage Users</a>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Users</h5>
+            </div>
+            <div class="card-body">
+                <h2 class="mb-2">{{ total_users }}</h2>
+                <p class="mb-1">Students: <strong>{{ total_students }}</strong></p>
+                <p class="mb-1">Leaders: <strong>{{ total_leaders }}</strong></p>
+                <p class="mb-0">Admins: <strong>{{ total_admins }}</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Clubs</h5>
+            </div>
+            <div class="card-body">
+                <h2 class="mb-2">{{ total_clubs }}</h2>
+                <p class="mb-1">Approved members: <strong>{{ total_memberships }}</strong></p>
+                <p class="mb-0">Pending requests: <strong>{{ pending_requests }}</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Events</h5>
+            </div>
+            <div class="card-body">
+                <h2 class="mb-2">{{ total_events }}</h2>
+                <p class="mb-1">Total invites: <strong>{{ total_invites }}</strong></p>
+                <p class="mb-0">Pending invites: <strong>{{ pending_invites }}</strong></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

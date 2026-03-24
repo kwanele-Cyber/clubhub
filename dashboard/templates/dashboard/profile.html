@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <!-- Profile Card -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Profile Information</h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-user-circle fa-5x text-secondary"></i>
+                </div>
+                <h4>{{ current_user.full_name }}</h4>
+                <p class="text-muted">{{ current_user.student_number }}</p>
+                
+                <hr>
+                
+                <div class="text-start">
+                    <p><i class="fas fa-envelope me-2"></i> {{ current_user.email }}</p>
+                    {% if current_user.phone %}
+                    <p><i class="fas fa-phone me-2"></i> {{ current_user.phone }}</p>
+                    {% endif %}
+                    <p><i class="fas fa-calendar me-2"></i> Joined: {{ current_user.created_at.strftime('%B %d, %Y') }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Stats Card -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-4">
+                        <h3>{{ club_count }}</h3>
+                        <small class="text-muted">Clubs</small>
+                    </div>
+                    <div class="col-4">
+                        <h3>{{ event_count }}</h3>
+                        <small class="text-muted">Events</small>
+                    </div>
+                    <div class="col-4">
+                        <h3>{{ total_points }}</h3>
+                        <small class="text-muted">Points</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Badges Card -->
+        <div class="card">
+            <div class="card-header bg-warning">
+                <h5 class="mb-0">Badges Earned</h5>
+            </div>
+            <div class="card-body">
+                {% if badges %}
+                <div class="row">
+                    {% for user_badge in badges %}
+                    <div class="col-6 text-center mb-3">
+                        <i class="{{ user_badge.badge.icon }} fa-3x text-primary"></i>
+                        <h6>{{ user_badge.badge.name }}</h6>
+                        <small class="text-muted">{{ user_badge.earned_at.strftime('%b %d, %Y') }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-center">No badges earned yet.</p>
+                <p class="text-center"><small>Participate in events to earn badges!</small></p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <!-- Recent Activity -->
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Recent Activity</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_contributions %}
+                <div class="list-group list-group-flush">
+                    {% for contribution in recent_contributions %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-star text-warning me-2"></i>
+                                <strong>+{{ contribution.points }} points</strong> - {{ contribution.description }}
+                            </div>
+                            <small class="text-muted">{{ contribution.created_at.strftime('%b %d, %Y') }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-center">No recent activity.</p>
+                <p class="text-center"><small>Join clubs and attend events to start earning points!</small></p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- My Clubs -->
+        <div class="card mt-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">My Clubs</h5>
+            </div>
+            <div class="card-body">
+                {% set memberships = current_user.memberships|selectattr('status', 'equalto', 'approved')|list %}
+                {% if memberships %}
+                <div class="row">
+                    {% for membership in memberships %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6>{{ membership.club.name }}</h6>
+                                <p class="small text-muted">{{ membership.club.category }}</p>
+                                {% if membership.role == 'leader' %}
+                                <span class="badge bg-warning">Leader</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Member</span>
+                                {% endif %}
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <a href="{{ url_for('clubs.view_club', club_id=membership.club.id) }}" class="btn btn-sm btn-outline-primary w-100">
+                                    View Club
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-center">You haven't joined any clubs yet.</p>
+                <div class="text-center">
+                    <a href="{{ url_for('clubs.list_clubs') }}" class="btn btn-primary">
+                        Browse Clubs
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

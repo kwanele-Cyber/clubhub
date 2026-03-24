@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h1>{{ club.name }}</h1>
+        <p class="lead">{{ club.description }}</p>
+        <p><small class="text-muted">Created by {{ club.creator.username }} on {{ club.created_at.strftime('%B %d, %Y')
+                }}</small></p>
+
+        {% if current_user.is_authenticated and club.created_by == current_user.id %}
+        <a href="{{ url_for('clubs.edit', club_id=club.id) }}" class="btn btn-warning">Edit Club</a>
+        {% endif %}
+        <a href="{{ url_for('clubs.list') }}" class="btn btn-secondary">Back to Clubs</a>
+    </div>
+</div>
+{% endblock %}

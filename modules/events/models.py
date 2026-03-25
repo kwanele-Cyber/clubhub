@@ -13,6 +13,7 @@ class Event(db.Model):
     start_time = db.Column(db.DateTime, nullable=False)
     end_time = db.Column(db.DateTime, nullable=False)
     max_attendees = db.Column(db.Integer)
+    price = db.Column(db.Float, default=0.0) # 0.0 means free
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True)
@@ -32,6 +33,7 @@ class EventAttendance(db.Model):
     event_id = db.Column(db.Integer, db.ForeignKey('events.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     status = db.Column(db.String(20), default='registered')  # 'registered', 'attended', 'cancelled'
+    ticket_id = db.Column(db.String(100), unique=True, nullable=True) # Unique ticket string for QR
     registered_at = db.Column(db.DateTime, default=datetime.utcnow)
     checked_in_at = db.Column(db.DateTime)
     

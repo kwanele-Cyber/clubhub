@@ -28,7 +28,7 @@ class ClubTestCase(unittest.TestCase):
         db.session.commit()
 
         # Log in the user
-        self.client.post('/login', data=dict(
+        self.client.post('/auth/login', data=dict(
             email='test@example.com',
             password='password'
         ), follow_redirects=True)
@@ -41,7 +41,7 @@ class ClubTestCase(unittest.TestCase):
 
     def test_create_club(self):
         """Test club creation."""
-        response = self.client.post('/admin/clubs/create', data=dict(
+        response = self.client.post('/clubs/create', data=dict(
             name='Test Club',
             description='A club for testing purposes.'
         ), follow_redirects=True)
@@ -56,7 +56,7 @@ class ClubTestCase(unittest.TestCase):
         db.session.add(club)
         db.session.commit()
 
-        response = self.client.post(f'/admin/clubs/delete/{club.id}', follow_redirects=True)
+        response = self.client.post(f'/clubs/delete/{club.id}', follow_redirects=True)
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'Club deleted successfully!', response.data)
         deleted_club = Club.query.get(club.id)
@@ -68,7 +68,7 @@ class ClubTestCase(unittest.TestCase):
         db.session.add(club)
         db.session.commit()
 
-        response = self.client.post(f'/admin/clubs/edit/{club.id}', data=dict(
+        response = self.client.post(f'/clubs/edit/{club.id}', data=dict(
             name='Edited Club Name',
             description='The description has been updated.'
         ), follow_redirects=True)
@@ -84,7 +84,7 @@ class ClubTestCase(unittest.TestCase):
         # Log out the user
         self.client.get('/logout', follow_redirects=True)
 
-        response = self.client.get('/admin/clubs/create', follow_redirects=True)
+        response = self.client.get('/clubs/create', follow_redirects=True)
         self.assertIn(b'Please log in to access this page.', response.data)
 
 if __name__ == '__main__':

@@ -9,7 +9,6 @@ from modules.clubs.models import Club, Membership
 from modules.events.models import Event, EventAttendance
 from modules.announcements.models import Announcement
 from modules.dashboard.models import Badge, Contribution
-from core.utils.gamification import GamificationService
 from datetime import datetime, timedelta
 
 
@@ -29,8 +28,6 @@ def init_database(drop_db = False):
         
         db.create_all()
         
-        # Create default badges
-        GamificationService.create_default_badges()
         
         # Create admin user
         admin = User(
@@ -38,6 +35,7 @@ def init_database(drop_db = False):
             first_name='Admin',
             last_name='User',
             email='admin@example.com',
+            email_confirmed=True,
             role = "admin",
             is_active=True
         )
@@ -52,6 +50,8 @@ def init_database(drop_db = False):
                 first_name=f'Test{i}',
                 last_name='User',
                 email=f'test{i}@example.com',
+                role='user',
+                email_confirmed=True,
                 is_active=True
             )
             user.set_password('password123')

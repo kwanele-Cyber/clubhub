@@ -3,7 +3,61 @@
 {% block content %}
 <div class="container">
     <h2 class="text-center my-4">Admin Dashboard</h2>
-    <div class="card">
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-header">Total Users</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ user_count }}</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-header">Total Clubs</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ club_count }}</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-info mb-3">
+                <div class="card-header">Total Events</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ event_count }}</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header">Recent Users</div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>User ID</th>
+                        <th>Full Name</th>
+                        <th>Email</th>
+                        <th>Date Registered</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in recent_users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.full_name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card mt-4">
         <div class="card-header">User Management</div>
         <div class="card-body">
             <table class="table table-striped">

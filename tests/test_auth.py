@@ -35,13 +35,13 @@ class AuthTestCase(unittest.TestCase):
 
     def test_registration_form_displays(self):
         """Test that the registration page displays correctly."""
-        response = self.client.get('/register')
+        response = self.client.get('/auth/register')
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'Register', response.data)
 
     def test_user_registration(self):
         """Test user registration."""
-        response = self.client.post('/register', data=dict(
+        response = self.client.post('/auth/register', data=dict(
             username='newuser',
             email='new@example.com',
             password='newpassword',
@@ -54,7 +54,7 @@ class AuthTestCase(unittest.TestCase):
 
     def test_duplicate_email_registration(self):
         """Test registration with a duplicate email."""
-        response = self.client.post('/register', data=dict(
+        response = self.client.post('/auth/register', data=dict(
             username='anotheruser',
             email='test@example.com',
             password='password',
@@ -65,7 +65,7 @@ class AuthTestCase(unittest.TestCase):
     def test_login_logout(self):
         """Test login and logout functionality."""
         # Test login with correct credentials
-        response = self.client.post('/login', data=dict(
+        response = self.client.post('/auth/login', data=dict(
             email='test@example.com',
             password='password'
         ), follow_redirects=True)
@@ -79,7 +79,7 @@ class AuthTestCase(unittest.TestCase):
 
     def test_login_with_wrong_password(self):
         """Test login with incorrect password."""
-        response = self.client.post('/login', data=dict(
+        response = self.client.post('/auth/login', data=dict(
             email='test@example.com',
             password='wrongpassword'
         ), follow_redirects=True)

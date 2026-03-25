@@ -64,3 +64,7 @@ def logout():
     logout_user()
     flash('You have been logged out.', 'info')
     return redirect(url_for('index'))
+
+@auth_bp.route('/privacy')
+def privacy():
+    return render_template('privacy_policy.html')

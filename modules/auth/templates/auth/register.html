@@ -70,6 +70,11 @@
                         {% endfor %}
                     </div>
 
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="privacyCheck" required>
+                        <label class="form-check-label" for="privacyCheck">I agree to the <a href="{{ url_for('auth.privacy') }}" target="_blank">Privacy Policy</a></label>
+                    </div>
+
                     <div class="d-grid">
                         {{ form.submit(class="btn btn-primary") }}
                     </div>

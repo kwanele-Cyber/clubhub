@@ -70,21 +70,20 @@ def list_events():
 def create_event():
     form = EventCreateForm()
     
-    # Get clubs where user has 'create_events' permission
-    all_memberships = Membership.query.filter_by(
-        user_id=current_user.id,
-        status='approved'
+    # Get clubs where user is leader
+    led_clubs = Club.query.join(Membership).filter(
+        Membership.user_id == current_user.id,
+        Membership.role == 'leader',
+        Membership.status == 'approved'
     ).all()
     
-    authorized_clubs = [m.club for m in all_memberships if m.has_perm('create_events')]
-    
-    if not authorized_clubs:
-        flash('You do not have permission to create events in any club.', 'warning')
+    if not led_clubs:
+        flash('You must be a club leader to create events.', 'warning')
         return redirect(url_for('events.list_events'))
     
     # Add club selection to form dynamically
     from wtforms import SelectField
-    form.club_id = SelectField('Club', choices=[(c.id, c.name) for c in authorized_clubs], validators=[DataRequired()])
+    form.club_id = SelectField('Club', choices=[(c.id, c.name) for c in led_clubs], validators=[DataRequired()])
     
     if form.validate_on_submit():
         # Double check permission for selected club
@@ -116,18 +115,20 @@ def create_event():
         flash(f'Event "{event.title}" created successfully!', 'success')
         return redirect(url_for('events.view_event', event_id=event.id))
     
-    return render_template('events/create.html', form=form, led_clubs=authorized_clubs)
+    return render_template('events/create.html', form=form, led_clubs=led_clubs)
 
 @events_bp.route('/<int:event_id>')
 @login_required
 def view_event(event_id):
     event = Event.query.get_or_404(event_id)
     
+    # Check if user is registered
     registration = EventAttendance.query.filter_by(
         event_id=event_id,
         user_id=current_user.id
     ).first()
     
+    # Get attendees
     attendees = db.session.query(User, EventAttendance).join(
         EventAttendance, User.id == EventAttendance.user_id
     ).filter(
@@ -135,13 +136,16 @@ def view_event(event_id):
         EventAttendance.status.in_(['registered', 'attended'])
     ).all()
     
-    # Permission checks using new system
-    membership = Membership.query.filter_by(
-        user_id=current_user.id,
-        club_id=event.club_id,
-        status='approved'
-    ).first()
-    can_manage = membership and membership.has_perm('create_events')
+    # Check if user can manage (club leader)
+    can_manage = False
+    if current_user.is_authenticated:
+        membership = Membership.query.filter_by(
+            user_id=current_user.id,
+            club_id=event.club_id,
+            role='leader',
+            status='approved'
+        ).first()
+        can_manage = membership is not None
     
     return render_template('events/view.html',
                          event=event,
@@ -154,10 +158,12 @@ def view_event(event_id):
 def register_event(event_id):
     event = Event.query.get_or_404(event_id)
     
+    # Check if event is in the future
     if event.start_time < datetime.utcnow():
         flash('Cannot register for past events.', 'danger')
         return redirect(url_for('events.view_event', event_id=event_id))
     
+    # Check if already registered
     existing = EventAttendance.query.filter_by(
         event_id=event_id,
         user_id=current_user.id
@@ -165,6 +171,7 @@ def register_event(event_id):
     
     if existing:
         if existing.status == 'cancelled':
+            # Reactivate cancelled registration
             existing.status = 'registered'
             existing.registered_at = datetime.utcnow()
             db.session.commit()
@@ -173,6 +180,7 @@ def register_event(event_id):
             flash('You are already registered for this event.', 'info')
         return redirect(url_for('events.view_event', event_id=event_id))
     
+    # Check attendee limit
     if event.max_attendees:
         current_attendees = EventAttendance.query.filter_by(
             event_id=event_id,
@@ -182,6 +190,7 @@ def register_event(event_id):
             flash('This event has reached its maximum capacity.', 'danger')
             return redirect(url_for('events.view_event', event_id=event_id))
     
+    # Create registration
     registration = EventAttendance(
         event_id=event_id,
         user_id=current_user.id,
@@ -198,6 +207,7 @@ def register_event(event_id):
 @login_required
 def cancel_registration(event_id):
     event = Event.query.get_or_404(event_id)
+    
     registration = EventAttendance.query.filter_by(
         event_id=event_id,
         user_id=current_user.id,
@@ -206,21 +216,24 @@ def cancel_registration(event_id):
     
     registration.status = 'cancelled'
     db.session.commit()
+    
     flash('Your registration has been cancelled.', 'success')
     return redirect(url_for('events.view_event', event_id=event_id))
 
 @events_bp.route('/<int:event_id>/check-in/<int:user_id>', methods=['POST'])
 @login_required
 def check_in_attendee(event_id, user_id):
+    # Check if user can manage (club leader)
     event = Event.query.get_or_404(event_id)
     membership = Membership.query.filter_by(
         user_id=current_user.id,
         club_id=event.club_id,
+        role='leader',
         status='approved'
     ).first()
     
-    if not membership or not membership.has_perm('create_events'): # use create_events perm for management
-        flash('Unauthorized', 'danger')
+    if not membership:
+        flash('You do not have permission to check in attendees.', 'danger')
         return redirect(url_for('events.view_event', event_id=event_id))
     
     registration = EventAttendance.query.filter_by(
@@ -231,14 +244,28 @@ def check_in_attendee(event_id, user_id):
     
     registration.status = 'attended'
     registration.checked_in_at = datetime.utcnow()
+    
+    # Award points for attendance
+    from app.models.gamification import Contribution
+    points = Contribution(
+        user_id=user_id,
+        club_id=event.club_id,
+        event_id=event_id,
+        points=10,  # Base points for attendance
+        contribution_type='event_attendance',
+        description=f'Attended event: {event.title}'
+    )
+    
+    db.session.add(points)
     db.session.commit()
     
-    flash('Attendee checked in!', 'success')
+    flash('Attendee checked in successfully!', 'success')
     return redirect(url_for('events.view_event', event_id=event_id))
 
 @events_bp.route('/api/events/upcoming')
 @login_required
 def api_upcoming_events():
+    """API endpoint for real-time dashboard updates"""
     events = Event.query.filter(
         Event.start_time >= datetime.utcnow(),
         Event.is_active == True
@@ -258,17 +285,21 @@ def api_upcoming_events():
 @login_required
 def edit_event(event_id):
     event = Event.query.get_or_404(event_id)
+    
+    # Check if user can edit (club leader)
     membership = Membership.query.filter_by(
         user_id=current_user.id,
         club_id=event.club_id,
+        role='leader',
         status='approved'
     ).first()
     
-    if not membership or not membership.has_perm('create_events'):
-        flash('Unauthorized', 'danger')
+    if not membership:
+        flash('You do not have permission to edit this event.', 'danger')
         return redirect(url_for('events.view_event', event_id=event_id))
     
     form = EventCreateForm()
+    
     if form.validate_on_submit():
         event.title = form.title.data
         event.description = form.description.data
@@ -277,10 +308,12 @@ def edit_event(event_id):
         event.start_time = form.start_time.data
         event.end_time = form.end_time.data
         event.max_attendees = form.max_attendees.data
+        
         db.session.commit()
-        flash('Event updated!', 'success')
+        flash('Event updated successfully!', 'success')
         return redirect(url_for('events.view_event', event_id=event_id))
     
+    # Pre-populate form
     if request.method == 'GET':
         form.title.data = event.title
         form.description.data = event.description
@@ -291,3 +324,5 @@ def edit_event(event_id):
         form.max_attendees.data = event.max_attendees
     
     return render_template('events/edit.html', form=form, event=event)
+
+from datetime import timedelta

@@ -20,7 +20,7 @@ def check_admin():
 
 @admin_bp.route('/admin/')
 def dashboard():
-    return render_template('dashboard/index.html')
+    return render_template('dashboard.html')
 
 @admin_bp.route('/api/stats')
 def api_stats():
@@ -72,7 +72,7 @@ def api_stats():
 @admin_bp.route('/admin/users')
 def users_report():
     users = User.query.order_by(User.created_at.desc()).all()
-    return render_template('admin/users.html', users=users)
+    return render_template('users.html', users=users)
 
 @admin_bp.route('/admin/clubs')
 def clubs_report():
@@ -88,7 +88,7 @@ def clubs_report():
         }
         club_stats.append(stats)
     
-    return render_template('admin/clubs.html', club_stats=club_stats)
+    return render_template('clubs.html', club_stats=club_stats)
 
 @admin_bp.route('/admin/engagement')
 def engagement_report():
@@ -116,6 +116,6 @@ def engagement_report():
     ).order_by(func.sum(Contribution.points).desc()
     ).limit(10).all()
     
-    return render_template('admin/engagement.html',
+    return render_template('engagement.html',
                          top_clubs=top_clubs,
                          top_users=top_users)

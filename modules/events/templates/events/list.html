@@ -2,242 +2,117 @@
 
 {% block title %}Events{% endblock %}
 
-{% block extra_css %}
-<!-- FullCalendar CSS -->
-<link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css' rel='stylesheet' />
-<style>
-    .fc {
-        font-family: inherit;
-    }
-
-    .fc-header-toolbar {
-        margin-bottom: 1rem !important;
-        font-size: 0.8rem;
-    }
-
-    .fc-toolbar-title {
-        font-size: 1.1rem !important;
-        font-weight: bold;
-    }
-
-    .fc-button {
-        padding: 0.2rem 0.5rem !important;
-        font-size: 0.8rem !important;
-    }
-
-    .fc-day-today {
-        background-color: rgba(13, 110, 253, 0.05) !important;
-    }
-
-    .event-card {
-        transition: transform 0.2s;
-        cursor: pointer;
-    }
-
-    .event-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="container-fluid px-0">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h2"><i class="fas fa-calendar-alt text-primary me-2"></i>Events</h1>
-        <a href="{{ url_for('events.create_event') }}" class="btn btn-primary">
-            <i class="fas fa-plus me-1"></i> Create Event
-        </a>
-    </div>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Events</h1>
+    <a href="{{ url_for('events.create_event') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Create Event
+    </a>
+</div>
 
-    <!-- Filter Tabs & Club Filter Combined -->
-    <div class="row mb-4 align-items-center">
-        <div class="col-lg-8">
-            <ul class="nav nav-pills small">
-                <li class="nav-item">
-                    <a class="nav-link {% if current_filter == 'upcoming' %}active{% endif %}"
-                        href="{{ url_for('events.list_events', filter='upcoming', club_id=current_club) }}">Upcoming</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if current_filter == 'today' %}active{% endif %}"
-                        href="{{ url_for('events.list_events', filter='today', club_id=current_club) }}">Today</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if current_filter == 'this_week' %}active{% endif %}"
-                        href="{{ url_for('events.list_events', filter='this_week', club_id=current_club) }}">This
-                        Week</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if current_filter == 'past' %}active{% endif %}"
-                        href="{{ url_for('events.list_events', filter='past', club_id=current_club) }}">Past</a>
-                </li>
-            </ul>
-        </div>
-        <div class="col-lg-4 mt-3 mt-lg-0">
-            {% if user_clubs %}
-            <div class="d-flex align-items-center">
-                <span class="small text-muted me-2 text-nowrap">Club:</span>
-                <select class="form-select form-select-sm" onchange="window.location.href=this.value">
-                    <option value="{{ url_for('events.list_events', filter=current_filter) }}" {% if not current_club
-                        %}selected{% endif %}>All Clubs</option>
-                    {% for club in user_clubs %}
-                    <option value="{{ url_for('events.list_events', filter=current_filter, club_id=club.id) }}" {% if
-                        current_club==club.id %}selected{% endif %}>{{ club.name }}</option>
-                    {% endfor %}
-                </select>
+<!-- Filter Tabs -->
+<ul class="nav nav-tabs mb-4">
+    <li class="nav-item">
+        <a class="nav-link {% if current_filter == 'upcoming' %}active{% endif %}" 
+           href="{{ url_for('events.list_events', filter='upcoming', club_id=current_club) }}">
+            Upcoming
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if current_filter == 'today' %}active{% endif %}" 
+           href="{{ url_for('events.list_events', filter='today', club_id=current_club) }}">
+            Today
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if current_filter == 'this_week' %}active{% endif %}" 
+           href="{{ url_for('events.list_events', filter='this_week', club_id=current_club) }}">
+            This Week
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if current_filter == 'past' %}active{% endif %}" 
+           href="{{ url_for('events.list_events', filter='past', club_id=current_club) }}">
+            Past
+        </a>
+    </li>
+</ul>
+
+<!-- Club Filter -->
+{% if user_clubs %}
+<div class="mb-4">
+    <label for="clubFilter" class="form-label">Filter by Club:</label>
+    <select class="form-select" id="clubFilter" onchange="window.location.href=this.value">
+        <option value="{{ url_for('events.list_events', filter=current_filter) }}" 
+                {% if not current_club %}selected{% endif %}>
+            All Clubs
+        </option>
+        {% for club in user_clubs %}
+        <option value="{{ url_for('events.list_events', filter=current_filter, club_id=club.id) }}"
+                {% if current_club == club.id %}selected{% endif %}>
+            {{ club.name }}
+        </option>
+        {% endfor %}
+    </select>
+</div>
+{% endif %}
+
+<!-- Events Grid -->
+<div class="row">
+    {% for event in events %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ event.title }}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">{{ event.club.name }}</h6>
+                
+                <p class="card-text">{{ event.description[:100] }}{% if event.description|length > 100 %}...{% endif %}</p>
+                
+                <div class="mb-2">
+                    <span class="badge bg-info">{{ event.event_type|title }}</span>
+                    {% if event.id in user_registrations %}
+                        {% set registration = user_registrations[event.id] %}
+                        {% if registration.status == 'registered' %}
+                            <span class="badge bg-success">Registered</span>
+                        {% elif registration.status == 'attended' %}
+                            <span class="badge bg-secondary">Attended</span>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                
+                <p class="card-text small mb-1">
+                    <i class="fas fa-calendar"></i> {{ event.start_time.strftime('%B %d, %Y') }}
+                </p>
+                <p class="card-text small mb-1">
+                    <i class="fas fa-clock"></i> {{ event.start_time.strftime('%I:%M %p') }} - {{ event.end_time.strftime('%I:%M %p') }}
+                </p>
+                <p class="card-text small mb-0">
+                    <i class="fas fa-map-marker-alt"></i> {{ event.location }}
+                </p>
+            </div>
+            
+            {% if event.max_attendees %}
+            <div class="card-footer bg-transparent">
+                <small class="text-muted">
+                    <i class="fas fa-users"></i> {{ event.attendance|selectattr('status', 'equalto', 'registered')|list|length }}/{{ event.max_attendees }} registered
+                </small>
             </div>
             {% endif %}
-        </div>
-    </div>
-
-    <div class="row">
-        <!-- Events List (col-8) -->
-        <div class="col-md-3">
-            <div class="row g-3">
-                {% for event in events %}
-                <div class="col-md-12 mb-3">
-                    <div class="card h-100 border-0 shadow-sm event-card"
-                        onclick="window.location.href='{{ url_for('events.view_event', event_id=event.id) }}'">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <span
-                                    class="badge {% if event.event_type == 'meeting' %}bg-primary{% elif event.event_type == 'workshop' %}bg-success{% else %}bg-info{% endif %} small">
-                                    {{ event.event_type|title }}
-                                </span>
-                                {% if event.id in user_registrations %}
-                                <span class="badge bg-dark">Registered</span>
-                                {% endif %}
-                            </div>
-                            <h5 class="card-title fw-bold text-truncate">{{ event.title }}</h5>
-                            <h6 class="card-subtitle mb-3 text-muted small">{{ event.club.name }}</h6>
-
-                            <p class="card-text text-muted small mb-3">{{ event.description|truncate(80) }}</p>
-
-                            <div class="small text-muted mb-1">
-                                <i class="far fa-calendar-alt me-2"></i>{{ event.start_time.strftime('%B %d, %Y') }}
-                            </div>
-                            <div class="small text-muted mb-1">
-                                <i class="far fa-clock me-2"></i>{{ event.start_time.strftime('%I:%M %p') }}
-                            </div>
-                            <div class="small text-muted">
-                                <i class="fas fa-map-marker-alt me-2"></i>{{ event.location }}
-                            </div>
-                        </div>
-                        <div class="card-footer bg-transparent border-0 pt-0 pb-3 mt-auto">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <div class="progress flex-grow-1 me-2" style="height: 5px;">
-                                    {% if event.max_attendees %}
-                                    {% set reg_count = event.attendance|selectattr('status', 'equalto',
-                                    'registered')|list|length %}
-                                    {% set percent = (reg_count / event.max_attendees * 100)|int %}
-                                    <div class="progress-bar" role="progressbar" style="width: {{ percent }}%"
-                                        aria-valuenow="{{ percent }}" aria-valuemin="0" aria-valuemax="100"></div>
-                                    {% else %}
-                                    <div class="progress-bar" role="progressbar" style="width: 100%" aria-valuenow="100"
-                                        aria-valuemin="0" aria-valuemax="100"></div>
-                                    {% endif %}
-                                </div>
-                                <small class="text-muted small">
-                                    {% if event.max_attendees %}
-                                    {{ event.attendance|selectattr('status', 'equalto', 'registered')|list|length }}/{{
-                                    event.max_attendees }}
-                                    {% else %}
-                                    {{ event.attendance|selectattr('status', 'equalto', 'registered')|list|length }}
-                                    joined
-                                    {% endif %}
-                                </small>
-                            </div>
-                            <a href="{{ url_for('events.view_event', event_id=event.id) }}"
-                                class="btn btn-outline-primary btn-sm w-100">Details</a>
-                        </div>
-                    </div>
-                </div>
-                {% else %}
-                <div class="col-12">
-                    <div class="text-center py-5 bg-light rounded">
-                        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">No events found for this selection.</p>
-                        <a href="{{ url_for('events.create_event') }}" class="btn btn-primary btn-sm">Create One</a>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-
-        <!-- Calendar Sidebar (col-9) -->
-        <div class="col-md-9">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white py-3">
-                    <h5 class="mb-0 fw-bold">Event Calendar</h5>
-                </div>
-                <div class="card-body p-2">
-                    <div id='calendar'></div>
-                </div>
-                <div class="card-footer bg-light border-0 py-3">
-                    <h6 class="small fw-bold mb-2">Legend:</h6>
-                    <div class="d-flex flex-wrap gap-2">
-                        <span class="badge bg-primary small">Meeting</span>
-                        <span class="badge bg-success small">Workshop</span>
-                        <span class="badge bg-info small">Social</span>
-                    </div>
-                </div>
+            
+            <div class="card-footer bg-transparent">
+                <a href="{{ url_for('events.view_event', event_id=event.id) }}" class="btn btn-outline-primary w-100">
+                    View Event
+                </a>
             </div>
         </div>
     </div>
-</div>
-{% endblock %}
-
-{% block extra_js %}
-<div id="events-data" class="d-none" style="display: none;">
-    {% for event in events %}
-    <div class="event-item" data-id="{{ event.id }}" data-title="{{ event.title|escape }}"
-        data-start="{{ event.start_time.isoformat() }}"
-        data-end="{% if event.end_time %}{{ event.end_time.isoformat() }}{% endif %}"
-        data-url="{{ url_for('events.view_event', event_id=event.id) }}"
-        data-color="{% if event.event_type == 'meeting' %}#0d6efd{% elif event.event_type == 'workshop' %}#198754{% else %}#0dcaf0{% endif %}">
+    {% else %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> No events found.
+            <a href="{{ url_for('events.create_event') }}" class="alert-link">Create an event!</a>
+        </div>
     </div>
+    {% endfor %}
 </div>
-{% endfor %}
-
-
-<!-- FullCalendar JS -->
-<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var _events = [];
-        document.querySelectorAll('.event-item').forEach(function (el) {
-            var eventObj = {
-                id: el.getAttribute('data-id'),
-                title: el.getAttribute('data-title'),
-                start: el.getAttribute('data-start'),
-                url: el.getAttribute('data-url'),
-                backgroundColor: el.getAttribute('data-color'),
-                borderColor: el.getAttribute('data-color')
-            };
-            if (el.getAttribute('data-end')) {
-                eventObj.end = el.getAttribute('data-end');
-            }
-            _events.push(eventObj);
-        });
-
-        var calendarEl = document.getElementById('calendar');
-        var calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: ''
-            },
-            height: 'auto',
-            events: _events,
-            eventClick: function (info) {
-                if (info.event.url) {
-                    window.location.href = info.event.url;
-                    info.jsEvent.preventDefault(); // prevents browser from following link in current tab.
-                }
-            }
-        });
-        calendar.render();
-    });
-</script>
 {% endblock %}

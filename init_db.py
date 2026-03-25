@@ -17,8 +17,11 @@ from modules.tasks.models import Task
 from modules.forum.models import ForumTopic, ForumComment, Post, Poll, PollOption, PollVote
 
 
+
 def init_database(drop_db = False):
     app = create_app()
+
+
     with app.app_context():
         # Create tables
         if drop_db:
@@ -35,7 +38,7 @@ def init_database(drop_db = False):
             first_name='Admin',
             last_name='User',
             email='admin@example.com',
-            is_admin=True,
+            role = "admin",
             is_active=True
         )
         admin.set_password('admin123')

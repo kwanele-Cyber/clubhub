@@ -12,6 +12,17 @@
             <div class="card-body">
                 <form method="POST" action="" novalidate>
                     {{ form.hidden_tag() }}
+                    {{ form.csrf_token }}
+
+                    <div class="row">
+                        {% for item in form %}
+                            {% for error in item.errors %}
+                                <div class="alert alert-danger input-group" role="alert">
+                                    <span style="color: red;">{{ error }}</span>
+                                </div>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">

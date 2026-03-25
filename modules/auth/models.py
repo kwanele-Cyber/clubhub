@@ -15,8 +15,10 @@ class User(UserMixin, db.Model):
     last_name = db.Column(db.String(50), nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
     phone = db.Column(db.String(20))
-    is_admin = db.Column(db.Boolean, default=False)
+    role = db.Column(db.String(20), default='user', nullable=False)
     is_active = db.Column(db.Boolean, default=True)
+    email_confirmed = db.Column(db.Boolean, default=False)
+    email_confirmed_on = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_login = db.Column(db.DateTime)
     
@@ -36,3 +38,10 @@ class User(UserMixin, db.Model):
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
+
+    def has_role(self, role):
+        return self.role == role
+    
+    @property
+    def is_admin(self):
+        return self.role == 'admin'

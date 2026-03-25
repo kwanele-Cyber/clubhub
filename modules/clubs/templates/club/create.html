@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Create Club{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Create New Club</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else ""), placeholder="Enter club name") }}
+                        {% for error in form.name.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.category.label(class="form-label") }}
+                        {{ form.category(class="form-select" + (" is-invalid" if form.category.errors else "")) }}
+                        {% for error in form.category.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows=5, placeholder="Describe your club's purpose, activities, and goals") }}
+                        {% for error in form.description.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.max_members.label(class="form-label") }}
+                        {{ form.max_members(class="form-control" + (" is-invalid" if form.max_members.errors else ""), placeholder="Leave empty for unlimited") }}
+                        {% for error in form.max_members.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                        <div class="form-text">Maximum number of members allowed in the club.</div>
+                    </div>
+                    
+                    <div class="mb-4 form-check form-switch">
+                        {{ form.is_public(class="form-check-input", role="switch") }}
+                        {{ form.is_public.label(class="form-check-label fw-bold") }}
+                        <div class="form-text">If off, users must request to join and be approved by a leader.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Club Logo (Optional)</label>
+                        <input type="file" class="form-control" name="logo" accept="image/*">
+                        <div class="form-text">Upload a square image for best results.</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-primary") }}
+                        <a href="{{ url_for('clubs.list_clubs') }}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Client-side validation
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const nameInput = document.getElementById('name');
+    const descriptionInput = document.getElementById('description');
+    
+    form.addEventListener('submit', function(event) {
+        let isValid = true;
+        
+        // Club name validation
+        if (nameInput.value.trim().length < 3) {
+            nameInput.classList.add('is-invalid');
+            if (!nameInput.nextElementSibling) {
+                const error = document.createElement('div');
+                error.className = 'invalid-feedback';
+                error.textContent = 'Club name must be at least 3 characters long.';
+                nameInput.parentNode.appendChild(error);
+            }
+            isValid = false;
+        }
+        
+        // Description validation
+        if (descriptionInput.value.trim().length < 20) {
+            descriptionInput.classList.add('is-invalid');
+            if (!descriptionInput.nextElementSibling) {
+                const error = document.createElement('div');
+                error.className = 'invalid-feedback';
+                error.textContent = 'Description must be at least 20 characters long.';
+                descriptionInput.parentNode.appendChild(error);
+            }
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            event.preventDefault();
+        }
+    });
+    
+    // Real-time validation
+    nameInput.addEventListener('input', function() {
+        if (this.value.trim().length >= 3) {
+            this.classList.remove('is-invalid');
+        }
+    });
+    
+    descriptionInput.addEventListener('input', function() {
+        if (this.value.trim().length >= 20) {
+            this.classList.remove('is-invalid');
+        }
+    });
+});
+</script>
+{% endblock %}

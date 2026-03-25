@@ -118,12 +118,10 @@
                         <div class="card h-100">
                             <div class="card-body">
                                 <h6>{{ membership.club.name }}</h6>
-                                <p class="small text-muted">{{ membership.club.category }}</p>
-                                {% if membership.role == 'leader' %}
-                                <span class="badge bg-warning">Leader</span>
-                                {% else %}
-                                <span class="badge bg-secondary">Member</span>
-                                {% endif %}
+                                <p class="small text-muted mb-2">{{ membership.club.category }}</p>
+                                <span class="badge {% if membership.role == 'leader' or (membership.club_role and membership.club_role.name == 'Leader') %}bg-warning{% else %}bg-secondary{% endif %}">
+                                    {{ (membership.club_role.name if membership.club_role else membership.role)|title }}
+                                </span>
                             </div>
                             <div class="card-footer bg-transparent">
                                 <a href="{{ url_for('clubs.view_club', club_id=membership.club.id) }}" class="btn btn-sm btn-outline-primary w-100">

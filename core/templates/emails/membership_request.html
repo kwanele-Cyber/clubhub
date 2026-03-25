@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #007bff; color: white; padding: 10px; text-align: center; }
+        .content { padding: 20px; }
+        .button { display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>New Membership Request</h2>
+        </div>
+        <div class="content">
+            <p>Hello {{ leader.first_name }},</p>
+            <p><strong>{{ user.full_name }}</strong> has requested to join <strong>{{ club.name }}</strong>.</p>
+            <p><strong>Student Number:</strong> {{ user.student_number }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p>Please review this request in your dashboard.</p>
+            <p>
+                <a href="{{ url_for('clubs.view_club', club_id=club.id, _external=True) }}" class="button">
+                    View Request
+                </a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

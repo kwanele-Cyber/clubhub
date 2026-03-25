@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h2 class="text-center my-4">User Profile</h2>
+            
+            <!-- Profile Update Form -->
+            <div class="card mb-4">
+                <div class="card-header">Update Your Profile</div>
+                <div class="card-body">
+                    <form method="POST" action="">
+                        {{ profile_form.hidden_tag() }}
+                        <div class="form-group">
+                            {{ profile_form.first_name.label(class="form-control-label") }}
+                            {{ profile_form.first_name(class="form-control form-control-lg") }}
+                        </div>
+                        <div class="form-group">
+                            {{ profile_form.last_name.label(class="form-control-label") }}
+                            {{ profile_form.last_name(class="form-control form-control-lg") }}
+                        </div>
+                        <div class="form-group">
+                            {{ profile_form.phone.label(class="form-control-label") }}
+                            {{ profile_form.phone(class="form-control form-control-lg") }}
+                        </div>
+                        <div class="form-group">
+                            {{ profile_form.submit_profile(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Change Password Form -->
+            <div class="card">
+                <div class="card-header">Change Your Password</div>
+                <div class="card-body">
+                    <form method="POST" action="">
+                        {{ password_form.hidden_tag() }}
+                        <div class="form-group">
+                            {{ password_form.current_password.label(class="form-control-label") }}
+                            {{ password_form.current_password(class="form-control form-control-lg") }}
+                        </div>
+                        <div class="form-group">
+                            {{ password_form.new_password.label(class="form-control-label") }}
+                            {{ password_form.new_password(class="form-control form-control-lg") }}
+                        </div>
+                        <div class="form-group">
+                            {{ password_form.confirm_new_password.label(class="form-control-label") }}
+                            {{ password_form.confirm_new_password(class="form-control form-control-lg") }}
+                        </div>
+                        <div class="form-group">
+                            {{ password_form.submit_password(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="card mt-4 border-danger">
+                <div class="card-header bg-danger text-white">Danger Zone</div>
+                <div class="card-body">
+                    <p>Deleting your account is a permanent action and cannot be undone.</p>
+                    <form method="POST" action="{{ url_for('auth.delete_account') }}" onsubmit="return confirm('Are you sure you want to delete your account? This action cannot be undone.');">
+                        <button type="submit" class="btn btn-danger">Delete My Account</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

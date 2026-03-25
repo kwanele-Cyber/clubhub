@@ -17,148 +17,153 @@
                         </p>
                     </div>
                     <div>
-                        {% if event.start_time > now() %}
-                            {% if not registration %}
-                                <form method="POST" action="{{ url_for('events.register_event', event_id=event.id) }}" class="d-inline">
-                                    <button type="submit" class="btn btn-success">
-                                        <i class="fas fa-check"></i> Register
-                                    </button>
-                                </form>
-                            {% elif registration.status == 'registered' %}
-                                <form method="POST" action="{{ url_for('events.cancel_registration', event_id=event.id) }}" class="d-inline">
-                                    <button type="submit" class="btn btn-danger" onclick="return confirm('Cancel your registration?')">
-                                        <i class="fas fa-times"></i> Cancel Registration
-                                    </button>
-                                </form>
-                            {% endif %}
-                        {% endif %}
-                        
-                        {% if can_manage and event.start_time > now() %}
-                            <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editEventModal">
-                                <i class="fas fa-edit"></i> Edit
+                        {% if event.start_time > now %}
+                        {% if not registration %}
+                        <form method="POST" action="{{ url_for('events.register_event', event_id=event.id) }}"
+                            class="d-inline">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-ticket-alt"></i> {% if event.price > 0 %}Buy Ticket (${{
+                                "%.2f"|format(event.price) }}){% else %}Claim Free Ticket{% endif %}
                             </button>
+                        </form>
+                        {% elif registration.status == 'registered' %}
+                        <form method="POST" action="{{ url_for('events.cancel_registration', event_id=event.id) }}"
+                            class="d-inline">
+                            <button type="submit" class="btn btn-danger"
+                                onclick="return confirm('Cancel your registration?')">
+                                <i class="fas fa-times"></i> Cancel Registration
+                            </button>
+                        </form>
+                        {% endif %}
+                        {% endif %}
+
+                        {% if can_manage and event.start_time > now %}
+                        <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editEventModal">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
                         {% endif %}
                     </div>
                 </div>
-                
+
                 <hr>
-                
+
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <p><i class="fas fa-calendar text-primary me-2"></i> <strong>Date:</strong> {{ event.start_time.strftime('%A, %B %d, %Y') }}</p>
-                        <p><i class="fas fa-clock text-primary me-2"></i> <strong>Time:</strong> {{ event.start_time.strftime('%I:%M %p') }} - {{ event.end_time.strftime('%I:%M %p') }}</p>
+                        <p><i class="fas fa-calendar text-primary me-2"></i> <strong>Date:</strong> {{
+                            event.start_time.strftime('%A, %B %d, %Y') }}</p>
+                        <p><i class="fas fa-clock text-primary me-2"></i> <strong>Time:</strong> {{
+                            event.start_time.strftime('%I:%M %p') }} - {{ event.end_time.strftime('%I:%M %p') }}</p>
                     </div>
                     <div class="col-md-6">
-                        <p><i class="fas fa-map-marker-alt text-primary me-2"></i> <strong>Location:</strong> {{ event.location }}</p>
-                        <p><i class="fas fa-users text-primary me-2"></i> 
-                            <strong>Attendees:</strong> 
-                            {% set registered_count = event.attendance|selectattr('status', 'equalto', 'registered')|list|length %}
+                        <p><i class="fas fa-map-marker-alt text-primary me-2"></i> <strong>Location:</strong> {{
+                            event.location }}</p>
+                        <p><i class="fas fa-users text-primary me-2"></i>
+                            <strong>Attendees:</strong>
+                            {% set registered_count = event.attendance|selectattr('status', 'equalto',
+                            'registered')|list|length %}
                             {{ registered_count }} registered
                             {% if event.max_attendees %}
-                                / {{ event.max_attendees }} maximum
+                            / {{ event.max_attendees }} maximum
                             {% endif %}
                         </p>
                     </div>
                 </div>
-                
+
                 <h5>Description</h5>
                 <p class="mt-3">{{ event.description }}</p>
-                
-                {% if event.start_time < now() and event.end_time > now() %}
-                <div class="alert alert-warning mt-3">
-                    <i class="fas fa-clock"></i> This event is currently in progress!
-                </div>
-                {% elif event.end_time < now() %}
-                <div class="alert alert-secondary mt-3">
-                    <i class="fas fa-history"></i> This event has ended.
-                </div>
-                {% endif %}
+
+                {% if event.start_time < now and event.end_time> now %}
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-clock"></i> This event is currently in progress!
+                    </div>
+                    {% elif event.end_time < now %} <div class="alert alert-secondary mt-3">
+                        <i class="fas fa-history"></i> This event has ended.
             </div>
+            {% endif %}
         </div>
-        
-        <!-- Attendees List -->
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Attendees ({{ attendees|length }})</h5>
-            </div>
-            <div class="card-body">
-                {% if attendees %}
-                <div class="list-group list-group-flush">
-                    {% for user, attendance in attendees %}
-                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                        <div>
-                            <i class="fas fa-user-circle me-2"></i>
-                            {{ user.full_name }}
-                            {% if attendance.status == 'attended' %}
-                                <span class="badge bg-success ms-2">Checked In</span>
-                            {% endif %}
-                        </div>
-                        
-                        {% if can_manage and attendance.status == 'registered' and event.start_time <= now() %}
-                        <form method="POST" action="{{ url_for('events.check_in_attendee', event_id=event.id, user_id=user.id) }}">
-                            <button type="submit" class="btn btn-sm btn-success">
-                                <i class="fas fa-check-circle"></i> Check In
-                            </button>
-                        </form>
+    </div>
+
+    <!-- Attendees List -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Attendees ({{ attendees|length }})</h5>
+        </div>
+        <div class="card-body">
+            {% if attendees %}
+            <div class="list-group list-group-flush">
+                {% for user, attendance in attendees %}
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas fa-user-circle me-2"></i>
+                        {{ user.full_name }}
+                        {% if attendance.status == 'attended' %}
+                        <span class="badge bg-success ms-2">Checked In</span>
                         {% endif %}
                     </div>
-                    {% endfor %}
+
+                    {% if can_manage and attendance.status == 'registered' and event.start_time <= now %} <form
+                        method="POST"
+                        action="{{ url_for('events.check_in_attendee', event_id=event.id, user_id=user.id) }}">
+                        <button type="submit" class="btn btn-sm btn-success">
+                            <i class="fas fa-check-circle"></i> Check In
+                        </button>
+                        </form>
+                        {% endif %}
                 </div>
-                {% else %}
-                <p class="text-muted mb-0">No attendees registered yet.</p>
-                {% endif %}
+                {% endfor %}
             </div>
+            {% else %}
+            <p class="text-muted mb-0">No attendees registered yet.</p>
+            {% endif %}
         </div>
     </div>
-    
-    <div class="col-md-4">
-        <!-- Event Info Card -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Event Details</h5>
-            </div>
-            <div class="card-body">
-                <p><strong>Organized by:</strong> {{ event.club.name }}</p>
-                <p><strong>Created by:</strong> {{ event.creator.full_name if event.creator else 'Unknown' }}</p>
-                <p><strong>Created on:</strong> {{ event.created_at.strftime('%B %d, %Y') }}</p>
-                
-                {% if event.max_attendees %}
-                    {% set registered_count = event.attendance|selectattr('status', 'equalto', 'registered')|list|length %}
-                    {% set percentage = (registered_count / event.max_attendees * 100)|round %}
-                    
-                    <!-- Progress bar with data attribute instead of inline style -->
-                    <div class="progress mb-3">
-                        <div class="progress-bar bg-success" role="progressbar" 
-                             data-percentage="{{ percentage }}" 
-                             aria-valuenow="{{ percentage }}" 
-                             aria-valuemin="0" 
-                             aria-valuemax="100">
-                            <span class="progress-text">{{ percentage }}% Full</span>
-                        </div>
-                    </div>
-                {% endif %}
-                
-                {% if registration and registration.status == 'registered' %}
-                <div class="alert alert-success">
-                    <i class="fas fa-check-circle"></i> You are registered for this event!
-                </div>
-                {% endif %}
-            </div>
+</div>
+
+<div class="col-md-4">
+    <!-- Event Info Card -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Event Details</h5>
         </div>
-        
-        <!-- Club Info Card -->
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">About {{ event.club.name }}</h5>
+        <div class="card-body">
+            <p><strong>Organized by:</strong> {{ event.club.name }}</p>
+            <p><strong>Created by:</strong> {{ event.creator.full_name if event.creator else 'Unknown' }}</p>
+            <p><strong>Created on:</strong> {{ event.created_at.strftime('%B %d, %Y') }}</p>
+
+            {% if event.max_attendees %}
+            {% set registered_count = event.attendance|selectattr('status', 'equalto', 'registered')|list|length %}
+            {% set percentage = (registered_count / event.max_attendees * 100)|round %}
+
+            <!-- Progress bar with data attribute instead of inline style -->
+            <div class="progress mb-3">
+                <div class="progress-bar bg-success" role="progressbar" data-percentage="{{ percentage }}"
+                    aria-valuenow="{{ percentage }}" aria-valuemin="0" aria-valuemax="100">
+                    <span class="progress-text">{{ percentage }}% Full</span>
+                </div>
             </div>
-            <div class="card-body">
-                <p>{{ event.club.description[:150] }}{% if event.club.description|length > 150 %}...{% endif %}</p>
-                <a href="{{ url_for('clubs.view_club', club_id=event.club.id) }}" class="btn btn-outline-primary w-100">
-                    View Club Page
-                </a>
+            {% endif %}
+
+            {% if registration and registration.status == 'registered' %}
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i> You are registered for this event!
             </div>
+            {% endif %}
         </div>
     </div>
+
+    <!-- Club Info Card -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">About {{ event.club.name }}</h5>
+        </div>
+        <div class="card-body">
+            <p>{{ event.club.description[:150] }}{% if event.club.description|length > 150 %}...{% endif %}</p>
+            <a href="{{ url_for('clubs.view_club', club_id=event.club.id) }}" class="btn btn-outline-primary w-100">
+                View Club Page
+            </a>
+        </div>
+    </div>
+</div>
 </div>
 
 <!-- Edit Event Modal -->
@@ -174,26 +179,36 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="edit_title" class="form-label">Title</label>
-                        <input type="text" class="form-control" id="edit_title" name="title" value="{{ event.title }}" required>
+                        <input type="text" class="form-control" id="edit_title" name="title" value="{{ event.title }}"
+                            required>
                     </div>
                     <div class="mb-3">
                         <label for="edit_description" class="form-label">Description</label>
-                        <textarea class="form-control" id="edit_description" name="description" rows="5" required>{{ event.description }}</textarea>
+                        <textarea class="form-control" id="edit_description" name="description" rows="5"
+                            required>{{ event.description }}</textarea>
                     </div>
-                    <div class="mb-3">
-                        <label for="edit_location" class="form-label">Location</label>
-                        <input type="text" class="form-control" id="edit_location" name="location" value="{{ event.location }}" required>
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label for="edit_location" class="form-label">Location</label>
+                            <input type="text" class="form-control" id="edit_location" name="location"
+                                value="{{ event.location }}" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="edit_price" class="form-label">Ticket Price ($)</label>
+                            <input type="number" step="0.01" min="0" class="form-control" id="edit_price" name="price"
+                                value="{{ '%.2f'|format(event.price) }}">
+                        </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="edit_start_time" class="form-label">Start Time</label>
-                            <input type="datetime-local" class="form-control" id="edit_start_time" name="start_time" 
-                                   value="{{ event.start_time.strftime('%Y-%m-%dT%H:%M') }}" required>
+                            <input type="datetime-local" class="form-control" id="edit_start_time" name="start_time"
+                                value="{{ event.start_time.strftime('%Y-%m-%dT%H:%M') }}" required>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="edit_end_time" class="form-label">End Time</label>
-                            <input type="datetime-local" class="form-control" id="edit_end_time" name="end_time" 
-                                   value="{{ event.end_time.strftime('%Y-%m-%dT%H:%M') }}" required>
+                            <input type="datetime-local" class="form-control" id="edit_end_time" name="end_time"
+                                value="{{ event.end_time.strftime('%Y-%m-%dT%H:%M') }}" required>
                         </div>
                     </div>
                 </div>
@@ -210,32 +225,32 @@
 
 {% block extra_js %}
 <script>
-// Helper function to get current datetime for template
-function now() {
-    return new Date();
-}
-
-// Set progress bar widths using JavaScript (no Jinja2 in style attributes)
-document.addEventListener('DOMContentLoaded', function() {
-    // Set progress bar widths
-    var progressBars = document.querySelectorAll('.progress-bar[data-percentage]');
-    progressBars.forEach(function(bar) {
-        var percentage = bar.getAttribute('data-percentage');
-        bar.style.width = percentage + '%';
-    });
-    
-    // Fix for Bootstrap modal backdrop issue
-    var editModal = document.getElementById('editEventModal');
-    if (editModal) {
-        editModal.addEventListener('hidden.bs.modal', function () {
-            // Remove any leftover backdrops
-            var backdrops = document.getElementsByClassName('modal-backdrop');
-            while(backdrops.length > 0) {
-                backdrops[0].parentNode.removeChild(backdrops[0]);
-            }
-            document.body.classList.remove('modal-open');
-        });
+    // Helper function to get current datetime for template
+    function now() {
+        return new Date();
     }
-});
+
+    // Set progress bar widths using JavaScript (no Jinja2 in style attributes)
+    document.addEventListener('DOMContentLoaded', function () {
+        // Set progress bar widths
+        var progressBars = document.querySelectorAll('.progress-bar[data-percentage]');
+        progressBars.forEach(function (bar) {
+            var percentage = bar.getAttribute('data-percentage');
+            bar.style.width = percentage + '%';
+        });
+
+        // Fix for Bootstrap modal backdrop issue
+        var editModal = document.getElementById('editEventModal');
+        if (editModal) {
+            editModal.addEventListener('hidden.bs.modal', function () {
+                // Remove any leftover backdrops
+                var backdrops = document.getElementsByClassName('modal-backdrop');
+                while (backdrops.length > 0) {
+                    backdrops[0].parentNode.removeChild(backdrops[0]);
+                }
+                document.body.classList.remove('modal-open');
+            });
+        }
+    });
 </script>
 {% endblock %}

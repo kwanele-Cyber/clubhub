@@ -1,29 +1,10 @@
 from core.database import db
-<<<<<<< HEAD
-=======
 from datetime import datetime
->>>>>>> 720ddde7f028556e55d54ea73c0da8d172ad6708
 
 class Event(db.Model):
     __tablename__ = 'events'
     
     id = db.Column(db.Integer, primary_key=True)
-<<<<<<< HEAD
-    title = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text)
-    date = db.Column(db.DateTime, nullable=False)
-    location = db.Column(db.String(200))
-    club_id = db.Column(db.Integer, db.ForeignKey('clubs.id'))
-    created_by = db.Column(db.Integer, db.ForeignKey('users.id'))
-    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
-    
-    # Relationships
-    club = db.relationship('Club', backref='events')
-    creator = db.relationship('User', backref='events')
-    
-    def __repr__(self):
-        return f'<Event {self.title}>'
-=======
     club_id = db.Column(db.Integer, db.ForeignKey('clubs.id'), nullable=False)
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, nullable=False)
@@ -32,6 +13,7 @@ class Event(db.Model):
     start_time = db.Column(db.DateTime, nullable=False)
     end_time = db.Column(db.DateTime, nullable=False)
     max_attendees = db.Column(db.Integer)
+    price = db.Column(db.Float, default=0.0) # 0.0 means free
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True)
@@ -51,6 +33,7 @@ class EventAttendance(db.Model):
     event_id = db.Column(db.Integer, db.ForeignKey('events.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     status = db.Column(db.String(20), default='registered')  # 'registered', 'attended', 'cancelled'
+    ticket_id = db.Column(db.String(100), unique=True, nullable=True) # Unique ticket string for QR
     registered_at = db.Column(db.DateTime, default=datetime.utcnow)
     checked_in_at = db.Column(db.DateTime)
     
@@ -59,4 +42,3 @@ class EventAttendance(db.Model):
     user = db.relationship('User', back_populates='events_attended')
     
     __table_args__ = (db.UniqueConstraint('event_id', 'user_id', name='unique_attendance'),)
->>>>>>> 720ddde7f028556e55d54ea73c0da8d172ad6708

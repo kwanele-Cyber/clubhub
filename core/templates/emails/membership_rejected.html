@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #dc3545; color: white; padding: 20px; text-align: center; }
+        .content { padding: 20px; }
+        .button { display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; }
+        .footer { margin-top: 30px; padding: 20px; text-align: center; color: #666; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Membership Update</h2>
+        </div>
+        <div class="content">
+            <p>Hello {{ user.first_name }},</p>
+            
+            <p>We regret to inform you that your request to join <strong>{{ club.name }}</strong> has been reviewed and was not approved at this time.</p>
+            
+            <p>This decision may be due to:</p>
+            <ul>
+                <li>Membership capacity limits</li>
+                <li>Eligibility requirements</li>
+                <li>Other administrative considerations</li>
+            </ul>
+            
+            <p>Don't be discouraged! You can:</p>
+            <ul>
+                <li>Explore other clubs that might interest you</li>
+                <li>Contact the club leaders for more information</li>
+                <li>Reapply at a later time</li>
+            </ul>
+            
+            <p style="text-align: center;">
+                <a href="{{ url_for('clubs.list_clubs', _external=True) }}" class="button">
+                    Browse Other Clubs
+                </a>
+            </p>
+            
+            <p>If you have any questions, please reach out to the club administration.</p>
+            
+            <p>Best regards,<br>The Student Club Management Team</p>
+        </div>
+        <div class="footer">
+            <p>This is an automated message from the Student Club Management System.</p>
+        </div>
+    </div>
+</body>
+</html>

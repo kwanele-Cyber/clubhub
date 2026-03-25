@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, jsonify
+from flask import Blueprint, render_template, jsonify, redirect, url_for
 from flask_login import login_required, current_user
 from datetime import datetime, timedelta
 from sqlalchemy import func
@@ -14,10 +14,10 @@ from modules.dashboard.models import Contribution, UserBadge
 dashboard_bp = Blueprint('dashboard', __name__,template_folder='templates')
 
 
-@dashboard_bp.route('/dashoard/')
+@dashboard_bp.route('/dashboard/')
 @login_required
 def index():
-    return render_template('index.html')
+    return render_template('dashboard/index.html')
 
 @dashboard_bp.route('/dashboard/profile')
 @login_required
@@ -45,7 +45,7 @@ def profile():
         user_id=current_user.id
     ).order_by(Contribution.created_at.desc()).limit(5).all()
     
-    return render_template('profile.html',
+    return render_template('dashboard/profile.html',
                          club_count=club_count,
                          event_count=event_count,
                          total_points=total_points,

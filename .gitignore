@@ -1,0 +1,6 @@
+__pycache__/
+
+.remember/
+.agent
+.idx/dev.nix
+.devserver.sh

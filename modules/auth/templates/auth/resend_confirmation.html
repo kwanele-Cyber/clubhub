@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Resend Confirmation Email{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4>Resend Confirmation Email</h4>
+            </div>
+            <div class="card-body">
+                <p>If you haven't received your confirmation email, enter your email address below and we will send it again.</p>
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    <div class="form-group">
+                        {{ form.email.label(class="form-control-label") }}
+                        {{ form.email(class="form-control form-control-lg") }}
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">Resend Confirmation</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

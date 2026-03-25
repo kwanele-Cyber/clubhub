@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Create Poll - {{ club.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="card-body p-5">
+                    <h2 class="fw-bold mb-4 text-center">Create New Poll</h2>
+                    <p class="text-muted text-center mb-5">Engage with your club members by asking a question.</p>
+                    
+                    <form action="{{ url_for('forum.create_poll', club_id=club.id) }}" method="POST" id="pollForm">
+                        <div class="mb-4">
+                            <label for="question" class="form-label fw-bold">Question</label>
+                            <input type="text" class="form-control form-control-lg border-2 shadow-none" id="question" name="question" required placeholder="What would you like to ask?">
+                        </div>
+                        
+                        <div id="optionsContainer" class="mb-4">
+                            <label class="form-label fw-bold d-block">Options</label>
+                            <div class="option-input mb-3 d-flex gap-2">
+                                <input type="text" name="options" class="form-control border-2 shadow-none" placeholder="Option 1" required>
+                                <div style="width: 48px;"></div> <!-- Spacer for first fixed option -->
+                            </div>
+                            <div class="option-input mb-3 d-flex gap-2">
+                                <input type="text" name="options" class="form-control border-2 shadow-none" placeholder="Option 2" required>
+                                <div style="width: 48px;"></div> <!-- Spacer for second fixed option -->
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mb-5">
+                            <button type="button" id="addOption" class="btn btn-outline-primary btn-sm rounded-pill px-4">
+                                <i class="fas fa-plus me-2"></i>Add Another Option
+                            </button>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg shadow-sm" style="border-radius: 12px;">Launch Poll</button>
+                            <a href="{{ url_for('clubs.view_club', club_id=club.id) }}" class="btn btn-light btn-lg text-muted" style="border-radius: 12px;">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    let optionCount = 2;
+    
+    $('#addOption').click(function() {
+        if (optionCount >= 10) {
+            alert('Max 10 options allowed.');
+            return;
+        }
+        optionCount++;
+        const newOption = `
+            <div class="option-input mb-3 d-flex gap-2 animate__animated animate__fadeIn">
+                <input type="text" name="options" class="form-control border-2 shadow-none" placeholder="Option ${optionCount}" required>
+                <button type="button" class="btn btn-outline-danger border-2 remove-option" style="width: 48px;"><i class="fas fa-trash-alt"></i></button>
+            </div>
+        `;
+        $('#optionsContainer').append(newOption);
+    });
+    
+    $(document).on('click', '.remove-option', function() {
+        $(this).closest('.option-input').remove();
+        optionCount--;
+        // Update placeholders
+        $('#optionsContainer .option-input input').each(function(index) {
+            $(this).attr('placeholder', 'Option ' + (index + 1));
+        });
+    });
+});
+</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+{% endblock %}

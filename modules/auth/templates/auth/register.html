@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Create an Account</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="" novalidate>
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.first_name.label(class="form-label") }}
+                            {{ form.first_name(class="form-control" + (" is-invalid" if form.first_name.errors else ""), placeholder="First name") }}
+                            {% for error in form.first_name.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.last_name.label(class="form-label") }}
+                            {{ form.last_name(class="form-control" + (" is-invalid" if form.last_name.errors else ""), placeholder="Last name") }}
+                            {% for error in form.last_name.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.student_number.label(class="form-label") }}
+                        {{ form.student_number(class="form-control" + (" is-invalid" if form.student_number.errors else ""), placeholder="e.g., S12345") }}
+                        {% for error in form.student_number.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.email.label(class="form-label") }}
+                        {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), placeholder="your@email.com") }}
+                        {% for error in form.email.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.phone.label(class="form-label") }}
+                        {{ form.phone(class="form-control" + (" is-invalid" if form.phone.errors else ""), placeholder="Optional") }}
+                        {% for error in form.phone.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.password.label(class="form-label") }}
+                        {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), placeholder="Minimum 6 characters") }}
+                        {% for error in form.password.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.confirm_password.label(class="form-label") }}
+                        {{ form.confirm_password(class="form-control" + (" is-invalid" if form.confirm_password.errors else ""), placeholder="Re-enter password") }}
+                        {% for error in form.confirm_password.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center">
+                <p class="mb-0">Already have an account? <a href="{{ url_for('auth.login') }}">Login here</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Client-side validation
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const password = document.getElementById('password');
+    const confirm = document.getElementById('confirm_password');
+    const email = document.getElementById('email');
+    const studentNumber = document.getElementById('student_number');
+    
+    form.addEventListener('submit', function(event) {
+        let isValid = true;
+        
+        // Email validation
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(email.value)) {
+            email.classList.add('is-invalid');
+            if (!email.nextElementSibling) {
+                const error = document.createElement('div');
+                error.className = 'invalid-feedback';
+                error.textContent = 'Please enter a valid email address.';
+                email.parentNode.appendChild(error);
+            }
+            isValid = false;
+        }
+        
+        // Student number validation
+        if (studentNumber.value.trim() === '') {
+            studentNumber.classList.add('is-invalid');
+            if (!studentNumber.nextElementSibling) {
+                const error = document.createElement('div');
+                error.className = 'invalid-feedback';
+                error.textContent = 'Student number is required.';
+                studentNumber.parentNode.appendChild(error);
+            }
+            isValid = false;
+        }
+        
+        // Password validation
+        if (password.value.length < 6) {
+            password.classList.add('is-invalid');
+            if (!password.nextElementSibling) {
+                const error = document.createElement('div');
+                error.className = 'invalid-feedback';
+                error.textContent = 'Password must be at least 6 characters.';
+                password.parentNode.appendChild(error);
+            }
+            isValid = false;
+        }
+        
+        // Confirm password validation
+        if (password.value !== confirm.value) {
+            confirm.classList.add('is-invalid');
+            if (!confirm.nextElementSibling) {
+                const error = document.createElement('div');
+                error.className = 'invalid-feedback';
+                error.textContent = 'Passwords must match.';
+                confirm.parentNode.appendChild(error);
+            }
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            event.preventDefault();
+        }
+    });
+    
+    // Real-time validation
+    email.addEventListener('input', function() {
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (emailPattern.test(this.value)) {
+            this.classList.remove('is-invalid');
+        }
+    });
+    
+    studentNumber.addEventListener('input', function() {
+        if (this.value.trim() !== '') {
+            this.classList.remove('is-invalid');
+        }
+    });
+    
+    password.addEventListener('input', function() {
+        if (this.value.length >= 6) {
+            this.classList.remove('is-invalid');
+        }
+    });
+    
+    confirm.addEventListener('input', function() {
+        if (this.value === password.value) {
+            this.classList.remove('is-invalid');
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,601 @@
+{% extends "base.html" %}
+
+{% block title %}{{ club.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .nav-tabs .nav-link {
+        color: #495057;
+        font-weight: 500;
+        border: none;
+        border-bottom: 3px solid transparent;
+        padding: 0.8rem 1.2rem;
+    }
+    .nav-tabs .nav-link.active {
+        color: #0d6efd;
+        background-color: transparent;
+        border-bottom: 3px solid #0d6efd;
+    }
+    .announcement-high { border-left: 4px solid #dc3545; background-color: #fff8f8; padding-left: 1rem; }
+    .announcement-normal { border-left: 4px solid #0d6efd; background-color: #f8fbff; padding-left: 1rem; }
+    .announcement-low { border-left: 4px solid #6c757d; background-color: #f8f9fa; padding-left: 1rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Club Header -->
+        <div class="card mb-4 border-0 shadow-sm overflow-hidden" style="border-radius: 15px;">
+            {% if club.banner_url %}
+            <img src="{{ club.banner_url }}" class="card-img-top" alt="Club Banner" style="height: 200px; object-fit: cover;">
+            {% else %}
+            <div class="bg-primary" style="height: 120px; opacity: 0.8;"></div>
+            {% endif %}
+            
+            <div class="card-body position-relative pb-0">
+                <div class="d-flex align-items-end mb-4" style="margin-top: -60px;">
+                    <div class="bg-white p-2 rounded-circle shadow-sm me-4" style="width: 120px; height: 120px;">
+                        {% if club.logo_url %}
+                        <img src="{{ club.logo_url }}" class="rounded-circle w-100 h-100" style="object-fit: cover;">
+                        {% else %}
+                        <div class="bg-light rounded-circle w-100 h-100 d-flex align-items-center justify-content-center">
+                            <i class="fas fa-users fa-3x text-muted"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-2">
+                        <h1 class="mb-1 fw-bold">{{ club.name }}</h1>
+                        <p class="text-muted small mb-2">
+                            <span class="badge bg-soft-primary text-primary border border-primary-subtle me-2">{{ club.category|title }}</span>
+                            {% if membership %}
+                            <span class="badge bg-soft-success text-success border border-success-subtle">{{ (membership.club_role.name if membership.club_role else membership.role)|title }}</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="ms-auto mb-2 d-flex gap-2">
+                        {% if not membership %}
+                            <form method="POST" action="{{ url_for('clubs.join_club', club_id=club.id) }}">
+                                <button type="submit" class="btn {% if club.is_public %}btn-success{% else %}btn-warning{% endif %} px-4">
+                                    {% if club.is_public %}
+                                        <i class="fas fa-sign-in-alt me-1"></i> Join Club
+                                    {% else %}
+                                        <i class="fas fa-user-plus me-1"></i> Request to Join
+                                    {% endif %}
+                                </button>
+                            </form>
+                        {% elif membership.status == 'pending' %}
+                            <button class="btn btn-warning px-4" disabled>
+                                <i class="fas fa-clock me-1"></i> Request Pending
+                            </button>
+                        {% endif %}
+
+                        {% if can_post_announcement %}
+                            <button class="btn btn-outline-primary px-3" data-bs-toggle="modal" data-bs-target="#announcementModal">
+                                <i class="fas fa-bullhorn me-1"></i> Announcement
+                            </button>
+                            <button class="btn btn-outline-secondary px-3" data-bs-toggle="modal" data-bs-target="#feedModal">
+                                <i class="fas fa-rss me-1"></i> Feed Post
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Tabbed Navigation -->
+                <ul class="nav nav-tabs border-0" id="clubTabs" role="tablist">
+                    {% if membership and membership.status == 'approved' %}
+                    <li class="nav-item">
+                        <a class="nav-link active" id="feed-tab" data-bs-toggle="tab" href="#feed" role="tab"><i class="fas fa-rss me-2"></i>Feed</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="members-tab" data-bs-toggle="tab" href="#members" role="tab"><i class="fas fa-users me-2"></i>Members</a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if not membership or membership.status != 'approved' %}active{% endif %}" id="info-tab" data-bs-toggle="tab" href="#info" role="tab"><i class="fas fa-info-circle me-2"></i>Club Info</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="events-tab" data-bs-toggle="tab" href="#events" role="tab"><i class="fas fa-calendar-alt me-2"></i>Events</a>
+                    </li>
+                    {% if can_view_tasks %}
+                    <li class="nav-item">
+                        <a class="nav-link" id="tasks-tab" data-bs-toggle="tab" href="#tasks" role="tab"><i class="fas fa-tasks me-2"></i>Tasks</a>
+                    </li>
+                    {% endif %}
+                    {% if membership and membership.status == 'approved' %}
+                    <li class="nav-item">
+                        <a class="nav-link" id="forum-tab" data-bs-toggle="tab" href="#forum" role="tab"><i class="fas fa-comments me-2"></i>Forum</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="polls-tab" data-bs-toggle="tab" href="#polls" role="tab"><i class="fas fa-poll me-2"></i>Polls</a>
+                    </li>
+                    {% endif %}
+                    {% if can_manage_members %}
+                    <li class="nav-item">
+                        <a class="nav-link" id="roles-tab" data-bs-toggle="tab" href="#roles" role="tab"><i class="fas fa-user-tag me-2"></i>Manage Roles</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="clubTabsContent">
+            
+            <!-- Feed Tab -->
+            {% if membership and membership.status == 'approved' %}
+            <div class="tab-pane fade show active" id="feed" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-8">
+                        {% if announcements %}
+                            <h5 class="mb-3 fw-bold">Recent Announcements</h5>
+                            {% for announcement in announcements %}
+                            <div class="card mb-3 border-0 shadow-sm announcement-{{ announcement.priority }}">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="mb-0 fw-bold">{{ announcement.title }}</h6>
+                                        <span class="badge {% if announcement.priority == 'high' %}bg-danger{% elif announcement.priority == 'normal' %}bg-primary{% else %}bg-secondary{% endif %} smaill">
+                                            {{ announcement.priority|title }}
+                                        </span>
+                                    </div>
+                                    <p class="mb-2 text-muted">{{ announcement.content }}</p>
+                                    <div class="d-flex align-items-center">
+                                        <small class="text-muted">
+                                            <i class="far fa-user me-1"></i> {{ announcement.author.full_name }}
+                                        </small>
+                                        <small class="text-muted ms-auto">
+                                            <i class="far fa-clock me-1"></i> {{ announcement.created_at.strftime('%B %d, %I:%M %p') }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-5 bg-white rounded shadow-sm">
+                                <i class="fas fa-bullhorn fa-3x text-light mb-3"></i>
+                                <p class="text-muted">No announcements posted yet.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Members Tab -->
+            {% if membership and membership.status == 'approved' %}
+            <div class="tab-pane fade" id="members" role="tabpanel">
+                <div class="row">
+                    <!-- Approved Members -->
+                    <div class="col-md-7">
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-white py-3">
+                                <h6 class="mb-0 fw-bold">Approved Members ({{ members|length }})</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="ps-4">Name</th>
+                                                <th>Role</th>
+                                                <th>Joined</th>
+                                                {% if can_manage_members %}<th class="text-end pe-4">Actions</th>{% endif %}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for user, m in members %}
+                                            <tr>
+                                                <td class="ps-4">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="avatar-sm rounded-circle bg-light d-flex align-items-center justify-content-center me-3" style="width: 35px; height: 35px;">
+                                                            {{ user.first_name[0] }}
+                                                        </div>
+                                                        <div>
+                                                            <div class="fw-bold">{{ user.full_name }}</div>
+                                                            <div class="small text-muted">{{ user.email }}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="badge {% if m.role == 'leader' or (m.club_role and m.club_role.name == 'Leader') %}bg-warning{% elif m.role == 'officer' or (m.club_role and m.club_role.name == 'Officer') %}bg-info{% else %}bg-light text-dark border{% endif %}">
+                                                        {{ (m.club_role.name if m.club_role else m.role)|title }}
+                                                    </span>
+                                                </td>
+                                                <td>{{ m.joined_at.strftime('%b %d, %Y') if m.joined_at else 'N/A' }}</td>
+                                                {% if can_manage_members %}
+                                                <td class="text-end pe-4">
+                                                    {% if user.id != current_user.id %}
+                                                    <div class="dropdown">
+                                                        <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-v"></i></button>
+                                                        <ul class="dropdown-menu dropdown-menu-end">
+                                                            <li><form method="POST" action="{{ url_for('clubs.remove_member', club_id=club.id, user_id=user.id) }}">
+                                                                <button type="submit" class="dropdown-item text-danger small" onclick="return confirm('Remove this member?')"><i class="fas fa-user-minus me-2"></i>Remove</button>
+                                                            </form></li>
+                                                            <li><hr class="dropdown-divider"></li>
+                                                            <li><h6 class="dropdown-header small">Change Role</h6></li>
+                                                            {% for role in club_roles %}
+                                                            <li><form method="POST" action="{{ url_for('clubs.change_role', club_id=club.id, user_id=user.id) }}">
+                                                                <input type="hidden" name="role_id" value="{{ role.id }}">
+                                                                <button type="submit" class="dropdown-item small {% if m.role_id == role.id %}active{% endif %}">
+                                                                    {{ role.name }}
+                                                                </button>
+                                                            </form></li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    </div>
+                                                    {% endif %}
+                                                </td>
+                                                {% endif %}
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pending Requests (Visible to Managers) -->
+                    {% if can_manage_members %}
+                    <div class="col-md-5">
+                        <div class="card border-0 shadow-sm border-start border-4 border-warning mb-4">
+                            <div class="card-header bg-white py-3">
+                                <h6 class="mb-0 fw-bold">Pending Requests ({{ pending_members|length }})</h6>
+                            </div>
+                            <div class="card-body">
+                                {% if pending_members %}
+                                    {% for m, user in pending_members %}
+                                    <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom last-child-no-border">
+                                        <div>
+                                            <div class="fw-bold small">{{ user.full_name }}</div>
+                                            <div class="text-muted smaller">{{ user.student_number }}</div>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <form method="POST" action="{{ url_for('clubs.approve_member', club_id=club.id, user_id=user.id) }}">
+                                                <button type="submit" class="btn btn-sm btn-success py-0"><i class="fas fa-check"></i></button>
+                                            </form>
+                                            <form method="POST" action="{{ url_for('clubs.reject_member', club_id=club.id, user_id=user.id) }}">
+                                                <button type="submit" class="btn btn-sm btn-danger py-0"><i class="fas fa-times"></i></button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <p class="text-muted small text-center my-3">No pending requests.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Manage Roles Tab -->
+            {% if can_manage_members %}
+            <div class="tab-pane fade" id="roles" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-white py-3">
+                                <h6 class="mb-0 fw-bold">Create Custom Role</h6>
+                            </div>
+                            <div class="card-body">
+                                <form action="{{ url_for('clubs.create_custom_role', club_id=club.id) }}" method="POST">
+                                    <div class="mb-3">
+                                        <label class="form-label small fw-bold">Role Name</label>
+                                        <input type="text" name="name" class="form-control" placeholder="e.g. Event Coordinator" required>
+                                    </div>
+                                    <label class="form-label small fw-bold mb-2">Permissions</label>
+                                    <div class="row g-2 mb-4">
+                                        <div class="col-6">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="perm_members" id="p1">
+                                                <label class="form-check-label small" for="p1">Manage Members</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="perm_announce" id="p2">
+                                                <label class="form-check-label small" for="p2">Post Announcements</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="perm_tasks" id="p3">
+                                                <label class="form-check-label small" for="p3">Manage Tasks</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="perm_events" id="p4">
+                                                <label class="form-check-label small" for="p4">Create Events</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="perm_forum" id="p5">
+                                                <label class="form-check-label small" for="p5">Moderate Forum</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="perm_polls" id="p6">
+                                                <label class="form-check-label small" for="p6">Create Polls</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100">Create Role</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white py-3">
+                                <h6 class="mb-0 fw-bold">Current Roles</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <ul class="list-group list-group-flush">
+                                    {% for role in club_roles %}
+                                    <li class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <span class="fw-bold">{{ role.name }}</span>
+                                                {% if role.is_default %}<span class="badge bg-light text-dark border ms-2">Default</span>{% endif %}
+                                            </div>
+                                            <small class="text-muted">
+                                                {% set p_count = role.permissions|length %}
+                                                {{ p_count }} permissions
+                                            </small>
+                                        </div>
+                                        <div class="mt-2">
+                                            {% for perm, val in role.permissions.items() %}
+                                                {% if val and perm != 'all' %}<span class="badge bg-soft-info text-info me-1" style="font-size: 0.65rem;">{{ perm|replace('_', ' ')|title }}</span>{% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Club Info Tab -->
+            <div class="tab-pane fade {% if not membership or membership.status != 'approved' %}show active{% endif %}" id="info" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-body">
+                                <h5 class="fw-bold mb-3">About Us</h5>
+                                <p class="text-muted">{{ club.description }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <h6 class="fw-bold mb-3">Club Details</h6>
+                                <p class="small mb-2"><strong>Category:</strong> {{ club.category|title }}</p>
+                                <p class="small mb-2"><strong>Founded:</strong> {{ club.created_at.strftime('%B %Y') }}</p>
+                                <p class="small mb-2"><strong>Member Limit:</strong> {{ club.max_members or 'Unlimited' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Other Tabs (Events, Tasks, Forum, Polls) stay largely the same but I'll ensure they look good -->
+            <!-- ... Events Tab ... -->
+            <div class="tab-pane fade" id="events" role="tabpanel">
+                <div class="row g-3">
+                    {% if events %}
+                        {% for event in events %}
+                        <div class="col-md-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <span class="badge bg-soft-info text-info mb-2">{{ event.event_type|title }}</span>
+                                    <h6 class="fw-bold">{{ event.title }}</h6>
+                                    <p class="small text-muted mb-3"><i class="far fa-calendar-alt me-1"></i> {{ event.start_time.strftime('%b %d, %Y') }}</p>
+                                    <a href="{{ url_for('events.view_event', event_id=event.id) }}" class="btn btn-sm btn-primary w-100">View Details</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="col-12 text-center py-5">
+                            <i class="far fa-calendar-times fa-3x text-light mb-3"></i>
+                            <p class="text-muted">No upcoming events planned.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if can_view_tasks %}
+            <div class="tab-pane fade" id="tasks" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                                <h6 class="mb-0 fw-bold">Active Tasks ({{ tasks|length }})</h6>
+                                <a href="{{ url_for('tasks.list_tasks', club_id=club.id) }}" class="btn btn-sm btn-outline-primary">Manage Tasks</a>
+                            </div>
+                            <div class="card-body">
+                                {% if tasks %}
+                                    <div class="list-group list-group-flush">
+                                        {% for task in tasks[:5] %}
+                                        <div class="list-group-item px-0 border-bottom-0">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <span class="badge {% if task.priority == 'high' %}bg-danger{% elif task.priority == 'medium' %}bg-warning{% else %}bg-info{% endif %} me-2">
+                                                        {{ task.priority|title }}
+                                                    </span>
+                                                    <span class="{% if task.status == 'completed' %}text-decoration-line-through text-muted{% endif %}">{{ task.title }}</span>
+                                                </div>
+                                                <small class="text-muted">{{ task.status|title }}</small>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <p class="text-muted text-center py-3 mb-0">No active tasks.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if membership and membership.status == 'approved' %}
+            <div class="tab-pane fade" id="forum" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                                <h6 class="mb-0 fw-bold">Recent Discussions</h6>
+                                <a href="{{ url_for('forum.club_forum', club_id=club.id) }}" class="btn btn-sm btn-primary">Go to Forum</a>
+                            </div>
+                            <div class="card-body">
+                                {% if forum_topics %}
+                                    {% for topic in forum_topics[:5] %}
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="me-3">
+                                            <i class="far fa-comments text-primary"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1"><a href="{{ url_for('forum.view_topic', topic_id=topic.id) }}" class="text-dark text-decoration-none fw-bold">{{ topic.title }}</a></h6>
+                                            <small class="text-muted">Started by {{ topic.author.full_name }} • {{ topic.created_at.strftime('%b %d') }}</small>
+                                        </div>
+                                        <div class="text-muted small">
+                                            <i class="far fa-comment-dots"></i> {{ topic.comments|length }}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="text-center py-4">
+                                        <p class="text-muted mb-0">No forum topics yet.</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if membership and membership.status == 'approved' %}
+            <div class="tab-pane fade" id="polls" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                                <h6 class="mb-0 fw-bold">Active Polls ({{ polls|length }})</h6>
+                                {% if membership and membership.has_perm('create_polls') %}
+                                <a href="{{ url_for('forum.create_poll_view', club_id=club.id) }}" class="btn btn-sm btn-outline-primary">Create Poll</a>
+                                {% endif %}
+                            </div>
+                            <div class="card-body">
+                                {% if polls %}
+                                    {% for poll in polls %}
+                                    <div class="mb-4 pb-3 border-bottom last-child-no-border">
+                                        <h6 class="fw-bold mb-2">{{ poll.question }}</h6>
+                                        <div class="d-grid gap-2">
+                                            {% for option in poll.options %}
+                                            <form action="{{ url_for('forum.vote_poll', poll_id=poll.id) }}" method="POST">
+                                                <input type="hidden" name="option_id" value="{{ option.id }}">
+                                                <button type="submit" class="btn btn-outline-light text-dark text-start w-100 py-2 border">
+                                                    <div class="d-flex justify-content-between">
+                                                        <span>{{ option.text }}</span>
+                                                        <span class="small text-muted">{{ option.votes|length }} votes</span>
+                                                    </div>
+                                                </button>
+                                            </form>
+                                            {% endfor %}
+                                        </div>
+                                        <small class="text-muted mt-2 d-block">Created on {{ poll.created_at.strftime('%b %d') }}</small>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="text-center py-5">
+                                        <i class="fas fa-poll fa-3x text-light mb-3"></i>
+                                        <p class="text-muted mb-0">No active polls at the moment.</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if can_post_announcement %}
+<!-- Announcement Modal -->
+<div class="modal fade" id="announcementModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Post Announcement</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('clubs.create_announcement', club_id=club.id) }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Title</label>
+                        <input type="text" name="title" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Content</label>
+                        <textarea name="content" class="form-control" rows="5" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Priority</label>
+                        <select name="priority" class="form-select">
+                            <option value="low">Low</option>
+                            <option value="normal" selected>Normal</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Post Now</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Feed Poster Modal -->
+<div class="modal fade" id="feedModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header bg-secondary text-white">
+                <h5 class="modal-title">Publish to Global Feed</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('forum.create_post', club_id=club.id) }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Post Content</label>
+                        <textarea name="content" class="form-control" rows="4" placeholder="Update your followers..." required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Poster URL (Optional)</label>
+                        <input type="text" name="image_url" class="form-control" placeholder="Link to event poster image...">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-secondary text-white">Publish Now</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<style>
+    .bg-soft-primary { background-color: #e7f1ff; }
+    .bg-soft-success { background-color: #e8fadf; }
+    .bg-soft-info { background-color: #e1f5fe; }
+    .last-child-no-border:last-child { border-bottom: none !important; }
+    .smaller { font-size: 0.75rem; }
+</style>
+{% endblock %}

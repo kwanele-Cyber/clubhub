@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Create Event{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Create New Event</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    
+                    {% if led_clubs|length > 1 %}
+                    <div class="mb-3">
+                        <label for="club_id" class="form-label">Select Club</label>
+                        <select class="form-select" id="club_id" name="club_id" required>
+                            <option value="">Choose a club...</option>
+                            {% for club in led_clubs %}
+                            <option value="{{ club.id }}">{{ club.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        {{ form.title.label(class="form-label") }}
+                        {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else ""), placeholder="Enter event title") }}
+                        {% for error in form.title.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.event_type.label(class="form-label") }}
+                        {{ form.event_type(class="form-select" + (" is-invalid" if form.event_type.errors else "")) }}
+                        {% for error in form.event_type.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows=5, placeholder="Describe your event details, agenda, and any requirements") }}
+                        {% for error in form.description.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.start_time.label(class="form-label") }}
+                            {{ form.start_time(class="form-control" + (" is-invalid" if form.start_time.errors else ""), type="datetime-local") }}
+                            {% for error in form.start_time.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            {{ form.end_time.label(class="form-label") }}
+                            {{ form.end_time(class="form-control" + (" is-invalid" if form.end_time.errors else ""), type="datetime-local") }}
+                            {% for error in form.end_time.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.location.label(class="form-label") }}
+                        {{ form.location(class="form-control" + (" is-invalid" if form.location.errors else ""), placeholder="Enter venue or online meeting link") }}
+                        {% for error in form.location.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.max_attendees.label(class="form-label") }}
+                        {{ form.max_attendees(class="form-control" + (" is-invalid" if form.max_attendees.errors else ""), placeholder="Leave empty for unlimited") }}
+                        {% for error in form.max_attendees.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                        <div class="form-text">Maximum number of people who can attend this event.</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-primary") }}
+                        <a href="{{ url_for('events.list_events') }}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Client-side validation
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const startTime = document.getElementById('start_time');
+    const endTime = document.getElementById('end_time');
+    
+    form.addEventListener('submit', function(event) {
+        let isValid = true;
+        const now = new Date();
+        
+        // Check if start time is in the future
+        if (new Date(startTime.value) < now) {
+            startTime.classList.add('is-invalid');
+            if (!startTime.nextElementSibling) {
+                const error = document.createElement('div');
+                error.className = 'invalid-feedback';
+                error.textContent = 'Start time cannot be in the past.';
+                startTime.parentNode.appendChild(error);
+            }
+            isValid = false;
+        }
+        
+        // Check if end time is after start time
+        if (new Date(endTime.value) <= new Date(startTime.value)) {
+            endTime.classList.add('is-invalid');
+            if (!endTime.nextElementSibling) {
+                const error = document.createElement('div');
+                error.className = 'invalid-feedback';
+                error.textContent = 'End time must be after start time.';
+                endTime.parentNode.appendChild(error);
+            }
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            event.preventDefault();
+        }
+    });
+    
+    // Real-time validation
+    startTime.addEventListener('change', function() {
+        if (new Date(this.value) >= new Date()) {
+            this.classList.remove('is-invalid');
+        }
+    });
+    
+    endTime.addEventListener('change', function() {
+        if (new Date(this.value) > new Date(startTime.value)) {
+            this.classList.remove('is-invalid');
+        }
+    });
+});
+</script>
+{% endblock %}

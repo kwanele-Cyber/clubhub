@@ -8,7 +8,7 @@ from modules.auth.models import User
 from modules.auth.forms import RegistrationForm, LoginForm
 
 
-auth_bp = Blueprint('auth', __name__, template_folder='templates')
+auth_bp = Blueprint('auth', __name__,template_folder='templates')
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
@@ -32,7 +32,7 @@ def register():
         flash('Your account has been created! You can now log in.', 'success')
         return redirect(url_for('auth.login'))
     
-    return render_template('register.html', form=form)
+    return render_template('auth/register.html', form=form)
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -56,7 +56,7 @@ def login():
         else:
             flash('Login unsuccessful. Please check email and password.', 'danger')
     
-    return render_template('login.html', form=form)
+    return render_template('auth/login.html', form=form)
 
 @auth_bp.route('/logout')
 @login_required

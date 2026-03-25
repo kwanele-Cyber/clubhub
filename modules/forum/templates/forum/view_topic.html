@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}{{ topic.title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-9">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('clubs.view_club', club_id=topic.club_id) }}">{{ topic.club.name }}</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('forum.club_forum', club_id=topic.club_id) }}">Forum</a></li>
+                <li class="breadcrumb-item active" aria-current="page">View Thread</li>
+            </ol>
+        </nav>
+
+        {% if topic.status == 'pending' %}
+        <div class="alert alert-warning border-0 shadow-sm mb-4">
+            <i class="fas fa-clock me-2"></i> This topic is currently <strong>pending moderation</strong>. Only officers and the author can see it.
+        </div>
+        {% endif %}
+
+        <!-- Original Post -->
+        <div class="card border-0 shadow-sm mb-5">
+            <div class="card-header bg-primary text-white py-3">
+                <h4 class="mb-0">{{ topic.title }}</h4>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-light rounded-circle text-primary d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px; font-weight: bold;">
+                        {{ topic.author.first_name[0] }}{{ topic.author.last_name[0] }}
+                    </div>
+                    <div>
+                        <h6 class="mb-0">{{ topic.author.full_name }}</h6>
+                        <small class="text-muted">Published on {{ topic.created_at.strftime('%b %d, %Y at %H:%M') }}</small>
+                    </div>
+                </div>
+                <div class="topic-content lead" style="white-space: pre-wrap;">{{ topic.content }}</div>
+            </div>
+        </div>
+
+        <!-- Comments Section -->
+        <h5 class="mb-4 d-flex align-items-center">
+            <i class="far fa-comments text-muted me-2"></i> Discussions ({{ topic.comments|length }})
+        </h5>
+
+        {% for comment in topic.comments %}
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <h6 class="mb-0 text-primary">{{ comment.author.full_name }}</h6>
+                    <small class="text-muted">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                </div>
+                <p class="mb-0">{{ comment.content }}</p>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Add Comment Form -->
+        <div class="card border-0 shadow-sm mt-5 mb-5 bg-light">
+            <div class="card-body">
+                <h6 class="card-title mb-3">Post a Response</h6>
+                <form action="{{ url_for('forum.post_comment', topic_id=topic.id) }}" method="POST">
+                    <div class="mb-3">
+                        <textarea name="content" class="form-control border-0 shadow-none" rows="3" placeholder="Join the discussion..." required></textarea>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary btn-sm px-4">Post Comment</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

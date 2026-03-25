@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h1>Welcome, {{ current_user.first_name }}!</h1>
+<p class="lead">Your student club dashboard</p>
+
+<!-- Real-time stats will be updated via JavaScript -->
+<div class="row mt-4" id="dashboard-stats">
+    <!-- Stats will be populated here -->
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Upcoming Events</h5>
+                <span class="badge bg-primary" id="event-count">0</span>
+            </div>
+            <div class="card-body" id="upcoming-events">
+                <div class="text-center">
+                    <div class="spinner"></div>
+                    <p>Loading events...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Recent Announcements</h5>
+            </div>
+            <div class="card-body" id="recent-announcements">
+                <div class="text-center">
+                    <div class="spinner"></div>
+                    <p>Loading announcements...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">My Clubs</h5>
+            </div>
+            <div class="card-body" id="my-clubs">
+                <!-- Club list will be populated here -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Pending Requests</h5>
+            </div>
+            <div class="card-body" id="pending-requests">
+                <!-- Requests will be populated here -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Real-time dashboard updates
+function updateDashboard() {
+    // Fetch upcoming events
+    fetch('/events/api/upcoming')
+        .then(response => response.json())
+        .then(events => {
+            const container = document.getElementById('upcoming-events');
+            const countBadge = document.getElementById('event-count');
+            
+            countBadge.textContent = events.length;
+            
+            if (events.length === 0) {
+                container.innerHTML = '<p class="text-muted">No upcoming events.</p>';
+            } else {
+                let html = '<div class="list-group">';
+                events.forEach(event => {
+                    const date = new Date(event.start_time);
+                    html += `
+                        <a href="/events/${event.id}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">${event.title}</h6>
+                                <small>${date.toLocaleDateString()}</small>
+                            </div>
+                            <p class="mb-1">${event.club}</p>
+                            <small>${event.location}</small>
+                        </a>
+                    `;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            }
+        });
+    
+    // Fetch stats
+    fetch('/dashboard/api/stats')
+        .then(response => response.json())
+        .then(stats => {
+            const statsContainer = document.getElementById('dashboard-stats');
+            statsContainer.innerHTML = `
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <i class="fas fa-users"></i>
+                        <h3>My Clubs</h3>
+                        <p class="display-6">${stats.club_count}</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card" style="background: linear-gradient(45deg, #e74c3c, #c0392b);">
+                        <i class="fas fa-calendar-check"></i>
+                        <h3>Events</h3>
+                        <p class="display-6">${stats.event_count}</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card" style="background: linear-gradient(45deg, #27ae60, #229954);">
+                        <i class="fas fa-star"></i>
+                        <h3>Points</h3>
+                        <p class="display-6">${stats.total_points}</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card" style="background: linear-gradient(45deg, #f39c12, #e67e22);">
+                        <i class="fas fa-bell"></i>
+                        <h3>Announcements</h3>
+                        <p class="display-6">${stats.announcement_count}</p>
+                    </div>
+                </div>
+            `;
+        });
+}
+
+// Update every 30 seconds
+updateDashboard();
+setInterval(updateDashboard, 30000);
+</script>
+{% endblock %}

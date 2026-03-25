@@ -21,7 +21,10 @@ class User(UserMixin, db.Model):
     last_login = db.Column(db.DateTime)
     
     # Relationships
-    #TODO:Add Relation ships
+    memberships = db.relationship('Membership', back_populates='user', cascade='all, delete-orphan')
+    events_attended = db.relationship('EventAttendance', back_populates='user')
+    announcements = db.relationship('Announcement', back_populates='author')
+    contributions = db.relationship('Contribution', back_populates='user')
 
     def set_password(self, password):
         salt = bcrypt.gensalt()

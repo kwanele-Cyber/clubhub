@@ -109,7 +109,12 @@
                                 {% endif %}
                             </div>
                             <h5 class="card-title fw-bold text-truncate">{{ event.title }}</h5>
-                            <h6 class="card-subtitle mb-3 text-muted small">{{ event.club.name }}</h6>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="card-subtitle text-muted small mb-0">{{ event.club.name }}</h6>
+                                <span class="badge {% if event.price > 0 %}bg-primary{% else %}bg-success{% endif %}">
+                                    {% if event.price > 0 %}${{ "%.2f"|format(event.price) }}{% else %}Free{% endif %}
+                                </span>
+                            </div>
 
                             <p class="card-text text-muted small mb-3">{{ event.description|truncate(80) }}</p>
 

@@ -107,6 +107,7 @@ def create_event():
             start_time=form.start_time.data,
             end_time=form.end_time.data,
             max_attendees=form.max_attendees.data,
+            price=form.price.data,
             created_by=current_user.id
         )
         
@@ -163,10 +164,16 @@ def register_event(event_id):
         user_id=current_user.id
     ).first()
     
+    # Generate unique ticket ID
+    import uuid
+    ticket_id = f"TKT-{event.id}-{current_user.id}-{uuid.uuid4().hex[:8].upper()}"
+    
     if existing:
         if existing.status == 'cancelled':
             existing.status = 'registered'
             existing.registered_at = datetime.utcnow()
+            if not existing.ticket_id:
+                existing.ticket_id = ticket_id
             db.session.commit()
             flash('Your registration has been reactivated!', 'success')
         else:
@@ -185,13 +192,14 @@ def register_event(event_id):
     registration = EventAttendance(
         event_id=event_id,
         user_id=current_user.id,
-        status='registered'
+        status='registered',
+        ticket_id=ticket_id
     )
     
     db.session.add(registration)
     db.session.commit()
     
-    flash('You have successfully registered for this event!', 'success')
+    flash('You have successfully registered for this event! Your ticket is in your Wallet.', 'success')
     return redirect(url_for('events.view_event', event_id=event_id))
 
 @events_bp.route('/<int:event_id>/cancel', methods=['POST'])
@@ -254,6 +262,17 @@ def api_upcoming_events():
     
     return jsonify(events_data)
 
+@events_bp.route('/wallet')
+@login_required
+def wallet():
+    # Fetch all user's active event registrations (excluding cancelled)
+    tickets = EventAttendance.query.join(Event).filter(
+        EventAttendance.user_id == current_user.id,
+        EventAttendance.status.in_(['registered', 'attended'])
+    ).order_by(Event.start_time.desc()).all()
+    
+    return render_template('events/wallet.html', tickets=tickets)
+
 @events_bp.route('/<int:event_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_event(event_id):
@@ -277,6 +296,7 @@ def edit_event(event_id):
         event.start_time = form.start_time.data
         event.end_time = form.end_time.data
         event.max_attendees = form.max_attendees.data
+        event.price = form.price.data
         db.session.commit()
         flash('Event updated!', 'success')
         return redirect(url_for('events.view_event', event_id=event_id))

@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, DateTimeField, IntegerField, SelectField, SubmitField
+from wtforms import StringField, TextAreaField, DateTimeField, IntegerField, SelectField, SubmitField, FloatField
 from wtforms.validators import DataRequired, Length, Optional, ValidationError
 from datetime import datetime
 
@@ -18,6 +18,7 @@ class EventCreateForm(FlaskForm):
     start_time = DateTimeField('Start Date & Time', format='%Y-%m-%dT%H:%M', validators=[DataRequired()])
     end_time = DateTimeField('End Date & Time', format='%Y-%m-%dT%H:%M', validators=[DataRequired()])
     max_attendees = IntegerField('Maximum Attendees (Optional)', validators=[Optional()])
+    price = FloatField('Ticket Price ($0.00 for free)', default=0.0, validators=[Optional()])
     submit = SubmitField('Create Event')
     
     def validate_end_time(self, field):

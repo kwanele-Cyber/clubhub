@@ -148,7 +148,8 @@ def view_event(event_id):
                          event=event,
                          registration=registration,
                          attendees=attendees,
-                         can_manage=can_manage)
+                         can_manage=can_manage,
+                         now=datetime.utcnow())
 
 @events_bp.route('/<int:event_id>/register', methods=['POST'])
 @login_required
